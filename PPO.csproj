@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net6.0-windows10.0.22621.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>False</UseWindowsForms>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>sgppo.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Database\**" />
+    <Compile Remove="Logic\**" />
+    <Compile Remove="Model\**" />
+    <Compile Remove="TestPPO\**" />
+    <Compile Remove="User Interface\**" />
+    <Compile Remove="Задания\**" />
+    <Compile Remove="Изображения\**" />
+    <EmbeddedResource Remove="Database\**" />
+    <EmbeddedResource Remove="Logic\**" />
+    <EmbeddedResource Remove="Model\**" />
+    <EmbeddedResource Remove="TestPPO\**" />
+    <EmbeddedResource Remove="User Interface\**" />
+    <EmbeddedResource Remove="Задания\**" />
+    <EmbeddedResource Remove="Изображения\**" />
+    <None Remove="Database\**" />
+    <None Remove="Logic\**" />
+    <None Remove="Model\**" />
+    <None Remove="TestPPO\**" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<Compile Remove="CLI\**" />
+		<EmbeddedResource Remove="CLI\**" />
+		<None Remove="CLI\**" />
+		<None Remove="User Interface\**" />
+		<None Remove="Задания\**" />
+		<None Remove="Изображения\**" />
+		<Page Remove="Database\**" />
+		<Page Remove="Logic\**" />
+		<Page Remove="Model\**" />
+		<Page Remove="User Interface\**" />
+		<Page Remove="Задания\**" />
+		<Page Remove="Изображения\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove=".gitignore" />
+	  <None Remove="README.md" />
+	  <None Remove="sgppo.snk" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Serilog" Version="2.12.0" />
+	  <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+	</ItemGroup>
+
+
+</Project>

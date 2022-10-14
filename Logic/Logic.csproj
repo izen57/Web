@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net6.0-windows10.0.22621.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>E:\temp\logickey.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Data\Repositories.csproj" />
+    <ProjectReference Include="..\Model\Model.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Model">
+      <HintPath>..\Data\bin\Debug\net6.0-windows10.0.22621.0\Model.dll</HintPath>
+    </Reference>
+    <Reference Include="Repositories">
+      <HintPath>..\Data\bin\Debug\net6.0-windows10.0.22621.0\Repositories.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
