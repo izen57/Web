@@ -5,6 +5,10 @@
 		public string Body { get; set; }
 		public bool IsTemporal { get; set; }
 
+		public Note()
+		{
+		}
+
 		public Note(Guid id, string body, bool isTemporal)
 		{
 			Id = id;

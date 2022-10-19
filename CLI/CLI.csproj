@@ -5,10 +5,10 @@
     <TargetFramework>net6.0-windows10.0.22621.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <BaseOutputPath>E:\temp\CLI</BaseOutputPath>
-    <BaseIntermediateOutputPath>E:\temp\CLI</BaseIntermediateOutputPath>
+    <BaseOutputPath>E:\web\CLI</BaseOutputPath>
+    <BaseIntermediateOutputPath>E:\web\CLI</BaseIntermediateOutputPath>
     <SignAssembly>False</SignAssembly>
-    <AssemblyOriginatorKeyFile>E:\temp\sgclikey.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>E:\web\keys\sgclikey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,6 +35,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />

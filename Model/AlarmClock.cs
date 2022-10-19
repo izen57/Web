@@ -7,6 +7,10 @@ namespace Model {
 		public Color AlarmClockColor { get; set; }
 		public bool IsWorking { get; set; }
 
+		public AlarmClock()
+		{
+		}
+
 		public AlarmClock(DateTime alarmTime, string name, Color alarmClockColor, bool isWorking) {
 			AlarmTime = alarmTime;
 			Name = name;

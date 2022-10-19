@@ -2,23 +2,29 @@
 using Model;
 using Serilog;
 
-namespace Logic {
-	public class AlarmClockService: IAlarmClockService {
+namespace Logic
+{
+	public class AlarmClockService: IAlarmClockService
+	{
 		IAlarmClockRepo _repository;
 
-		public AlarmClockService(IAlarmClockRepo repo) {
+		public AlarmClockService(IAlarmClockRepo repo)
+		{
 			_repository = repo ?? throw new ArgumentNullException(nameof(repo));
 		}
 
-		public void Create(AlarmClock alarmClock) {
+		public void Create(AlarmClock alarmClock)
+		{
 			_repository.Create(alarmClock);
 		}
 
-		public void Edit(AlarmClock alarmClock, DateTime oldTime) {
+		public void Edit(AlarmClock alarmClock, DateTime oldTime)
+		{
 			_repository.Edit(alarmClock, oldTime);
 		}
 
-		public void Delete(DateTime alarmTime) {
+		public void Delete(DateTime alarmTime)
+		{
 			_repository.Delete(alarmTime);
 		}
 
@@ -27,11 +33,13 @@ namespace Logic {
 			return _repository.GetAlarmClock(dateTime);
 		}
 
-		public List<AlarmClock> GetAllAlarmClocks() {
+		public List<AlarmClock> GetAllAlarmClocks()
+		{
 			return _repository.GetAllAlarmClocksList();
 		}
 
-		public void InvertWork(AlarmClock alarmClock) {
+		public void InvertWork(AlarmClock alarmClock)
+		{
 			alarmClock.IsWorking = !alarmClock.IsWorking;
 			Edit(alarmClock, alarmClock.AlarmTime);
 

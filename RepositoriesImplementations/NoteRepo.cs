@@ -15,7 +15,7 @@ namespace RepositoriesImplementations
 		{
 			try
 			{
-				_isoStore = IsolatedStorageFile.GetUserStoreForAssembly();
+				_isoStore = IsolatedStorageFile.GetUserStoreForApplication();
 				_isoStore.CreateDirectory("notes");
 			}
 			catch (Exception ex)

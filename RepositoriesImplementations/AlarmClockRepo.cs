@@ -27,7 +27,6 @@ namespace RepositoriesImplementations
 				);
 			}
 			Log.Logger.Information("Создана папка для будильников.");
-			
 		}
 
 		public void Create(AlarmClock alarmClock)

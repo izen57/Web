@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <SignAssembly>True</SignAssembly>
-    <AssemblyOriginatorKeyFile>E:\temp\exceptions.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>E:\web\keys\exceptions.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
 </Project>

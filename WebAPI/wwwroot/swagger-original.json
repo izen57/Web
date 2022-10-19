@@ -1,0 +1,790 @@
+{
+  "openapi" : "3.0.3",
+  "info" : {
+    "title" : "NotStopAlarm",
+    "version" : "0.1.0"
+  },
+  "servers" : [ {
+    "url" : "/"
+  } ],
+  "tags" : [ {
+    "name" : "alarmclock",
+    "description" : "Действия для будильников"
+  }, {
+    "name" : "note",
+    "description" : "Действия для заметок"
+  }, {
+    "name" : "stopwatch",
+    "description" : "Действия для секундомера"
+  } ],
+  "paths" : {
+    "/alarmclock" : {
+      "get" : {
+        "tags" : [ "alarmclock" ],
+        "summary" : "Возвращает информацию о всех будильниках",
+        "operationId" : "getAlarmClock",
+        "responses" : {
+          "200" : {
+            "description" : "Будильники успешно возвращены",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AlarmClock"
+                }
+              },
+              "application/xml" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AlarmClock"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка синтаксиса"
+          },
+          "404" : {
+            "description" : "Какие-либо будильники не найдены"
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "alarmclock" ],
+        "summary" : "Создаёт новый будильник",
+        "operationId" : "addAlarmClock",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AlarmClock"
+              }
+            },
+            "application/xml" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AlarmClock"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Будильник успешно создан",
+            "content" : {
+              "application/json" : {
+                "schema": {
+                  "type": "string",
+                  "properties": {
+                    "location": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "string",
+                  "properties": {
+                    "location": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка синтаксиса"
+          }
+        }
+      }
+    },
+    "/alarmclock/{alarmClockTime}": {
+      "get": {
+        "tags": [ "alarmclock" ],
+        "summary": "Возвращает будильник по заданным дате и времени",
+        "operationId": "getAlarmClockByTime",
+        "parameters": [
+          {
+            "name": "alarmClockTime",
+            "in": "path",
+            "description": "Время искомого будильника",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "format": "data-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Будильник найден",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlarmClock"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlarmClock"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка синтаксиса"
+          },
+          "404": {
+            "description": "Будильник не найден"
+          }
+        }
+      },
+      "put": {
+        "tags": [ "alarmclock" ],
+        "summary": "Обновляет существующий будильник по дате и времени",
+        "operationId": "updateAlarmClock",
+        "parameters": [
+          {
+            "name": "alarmClockTime",
+            "in": "path",
+            "description": "Время обновляемого будильника",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "format": "data-time"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlarmClock"
+              }
+            },
+            "application/xml": {
+              "schema": {
+                "$ref": "#/components/schemas/AlarmClock"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Существующий будильник изменён",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlarmClock"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlarmClock"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка синтаксиса"
+          },
+          "404": {
+            "description": "Будильник не найден"
+          }
+        }
+      },
+      "delete": {
+        "tags": [ "alarmclock" ],
+        "summary": "Удаляет будильник по времени и дате",
+        "operationId": "deleteAlarmClock",
+        "parameters": [
+          {
+            "name": "alarmClockTime",
+            "in": "path",
+            "description": "Время искомого будильника",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "format": "data-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Будильник успешно удалён"
+          },
+          "400": {
+            "description": "Ошибка синтаксиса"
+          },
+          "404": {
+            "description": "Будильник не найден"
+          }
+        }
+      }
+    },
+    "/alarmclock/{alarmClockTime}/invertWork" : {
+      "patch" : {
+        "tags" : [ "alarmclock" ],
+        "summary" : "Инвертирует работу будильника",
+        "description" : "Если будильник был выключен, то включает его. Если будильник был включён - выключает.",
+        "operationId" : "invertAlarmClock",
+        "parameters" : [ {
+          "name" : "alarmClockTime",
+          "in" : "path",
+          "description" : "Время искомого будильника",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "data-time"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Работа будильника успешно инвертирована",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200"
+                }
+              },
+              "application/xml" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка синтаксиса"
+          },
+          "404" : {
+            "description" : "Будильник не найден"
+          }
+        }
+      }
+    },
+    "/note" : {
+      "get" : {
+        "tags" : [ "note" ],
+        "summary" : "Возвращает информацию о всех заметках",
+        "operationId" : "getNote",
+        "responses" : {
+          "200" : {
+            "description" : "Будильники успешно возвращены",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Note"
+                }
+              },
+              "application/xml" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Note"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка синтаксиса"
+          },
+          "404" : {
+            "description" : "Какие-либо заметки не найдены"
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "note" ],
+        "summary" : "Обновляет существующую заметку",
+        "operationId" : "updateNote",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Note"
+              }
+            },
+            "application/xml" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Note"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Существующая заметка изменена",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Note"
+                }
+              },
+              "application/xml" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Note"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка синтаксиса"
+          },
+          "404" : {
+            "description" : "Заметка не найдена"
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "note" ],
+        "summary" : "Создаёт новую заметку",
+        "operationId" : "addNote",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Note"
+              }
+            },
+            "application/xml" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Note"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Заметка успешно создана",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Note"
+                }
+              },
+              "application/xml" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Note"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка синтаксиса"
+          }
+        }
+      }
+    },
+    "/note/{noteId}" : {
+      "get" : {
+        "tags" : [ "note" ],
+        "summary" : "Возвращает заметку по её идентификатору",
+        "operationId" : "getNoteById",
+        "parameters" : [ {
+          "name" : "noteId",
+          "in" : "path",
+          "description" : "Идентификатор искомой заметки",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "guid",
+            "example" : "ac1fb7f3-4442-4dda-8146-24c8eb6d20a0"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Заметка найдена",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Note"
+                }
+              },
+              "application/xml" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Note"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка синтаксиса"
+          },
+          "404" : {
+            "description" : "Заметка не найдена"
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "note" ],
+        "summary" : "Удаляет заметку по её идентификатору",
+        "operationId" : "deleteNote",
+        "parameters" : [ {
+          "name" : "noteId",
+          "in" : "path",
+          "description" : "Идентификатор искомой заметки",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "guid",
+            "example" : "ac1fb7f3-4442-4dda-8146-24c8eb6d20a0"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Заметка успешно удалена"
+          },
+          "400" : {
+            "description" : "Ошибка синтаксиса"
+          },
+          "404" : {
+            "description" : "Заметка не найдена"
+          }
+        }
+      }
+    },
+    "/stopwatch/set" : {
+      "patch" : {
+        "tags" : [ "stopwatch" ],
+        "summary" : "Запускает секундомер",
+        "operationId" : "setStopwatch",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/stopwatch_set_body"
+              }
+            },
+            "application/xml" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/stopwatch_set_body_1"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Секундомер запущен",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Stopwatch"
+                }
+              },
+              "application/xml" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Stopwatch"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка синтаксиса"
+          }
+        }
+      }
+    },
+    "/stopwatch/reset" : {
+      "patch" : {
+        "tags" : [ "stopwatch" ],
+        "summary" : "Сбрасывает секундомер",
+        "operationId" : "resetStopwatch",
+        "responses" : {
+          "200" : {
+            "description" : "Секундомер успешно сброшен",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_1"
+                }
+              },
+              "application/xml" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_1"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка синтаксиса"
+          }
+        }
+      }
+    },
+    "/stopwatch/stop" : {
+      "patch" : {
+        "tags" : [ "stopwatch" ],
+        "summary" : "Останавливает секундомер",
+        "operationId" : "stopStopwatch",
+        "responses" : {
+          "200" : {
+            "description" : "Секундомер успешно сброшен",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_2"
+                }
+              },
+              "application/xml" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_2"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка синтаксиса"
+          }
+        }
+      }
+    },
+    "/stopwatch/addTimeFlags" : {
+      "patch" : {
+        "tags" : [ "stopwatch" ],
+        "summary" : "Устанавливает временный флаг",
+        "operationId" : "addFlagsStopwatch",
+        "responses" : {
+          "200" : {
+            "description" : "Флаг успешно добавлен",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_3"
+                }
+              },
+              "application/xml" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_3"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка синтаксиса"
+          }
+        }
+      }
+    },
+    "/stopwatch/color" : {
+      "patch" : {
+        "tags" : [ "stopwatch" ],
+        "summary" : "Изменяет цвет секундомера",
+        "operationId" : "colorStopwatch",
+        "responses" : {
+          "200" : {
+            "description" : "Цвет успешно изменён",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Stopwatch"
+                }
+              },
+              "application/xml" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Stopwatch"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка синтаксиса"
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "Note" : {
+        "required" : [ "Body", "CreationTime", "Id", "isTemporal" ],
+        "type" : "object",
+        "properties" : {
+          "Id" : {
+            "type" : "string",
+            "format" : "guid",
+            "example" : "ac1fb7f3-4442-4dda-8146-24c8eb6d20a0"
+          },
+          "CreationTime" : {
+            "type" : "string",
+            "format" : "data-time",
+            "example" : "2020-12-09 16:09:53"
+          },
+          "Body" : {
+            "type" : "string"
+          },
+          "isWorking" : {
+            "type" : "boolean",
+            "example" : true
+          }
+        },
+        "example" : {
+          "CreationTime" : "2020-12-09 16:09:53",
+          "Id" : "ac1fb7f3-4442-4dda-8146-24c8eb6d20a0",
+          "Body" : "Body",
+          "isWorking" : true
+        },
+        "xml" : {
+          "name" : "note"
+        }
+      },
+      "Stopwatch" : {
+        "required" : [ "Name", "StopwatchColor", "TimeFlags", "Timing", "isWorking" ],
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "stopwatchColor" : {
+            "type" : "string",
+            "example" : "green"
+          },
+          "timing" : {
+            "type" : "string",
+            "format" : "data-time",
+            "example" : "2020-12-09 16:09:53"
+          },
+          "timeFlags" : {
+            "type" : "array",
+            "xml" : {
+              "wrapped" : true
+            },
+            "items" : {
+              "type" : "string",
+              "format" : "data-time"
+            }
+          },
+          "isWorking" : {
+            "type" : "boolean",
+            "example" : true
+          }
+        },
+        "example" : {
+          "timeFlags" : [ "timeFlags", "timeFlags" ],
+          "stopwatchColor" : "green",
+          "timing" : "2020-12-09 16:09:53",
+          "name" : "name",
+          "isWorking" : true
+        },
+        "xml" : {
+          "name" : "stopwatch"
+        }
+      },
+      "AlarmClock" : {
+        "required" : [ "alarmClockColor", "alarmTime", "isWorking", "name" ],
+        "type" : "object",
+        "properties" : {
+          "alarmTime" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "name" : {
+            "type" : "string",
+            "example" : "alarmClock"
+          },
+          "alarmClockColor" : {
+            "type" : "string",
+            "example" : "green"
+          },
+          "isWorking" : {
+            "type" : "boolean",
+            "example" : true
+          }
+        },
+        "example" : {
+          "alarmTime" : "2000-01-23T04:56:07.000",
+          "alarmClockColor" : "green",
+          "name" : "alarmClock",
+          "isWorking" : true
+        },
+        "xml" : {
+          "name" : "alarmclock"
+        }
+      },
+      "inline_response_200" : {
+        "type" : "object",
+        "properties" : {
+          "isWorking" : {
+            "type" : "boolean",
+            "example" : true
+          }
+        },
+        "example" : {
+          "isWorking" : true
+        }
+      },
+      "stopwatch_set_body" : {
+        "type" : "object",
+        "properties" : {
+          "isWorking" : {
+            "type" : "boolean",
+            "example" : true
+          }
+        }
+      },
+      "stopwatch_set_body_1" : {
+        "type" : "object",
+        "properties" : {
+          "isWorking" : {
+            "type" : "boolean",
+            "example" : true
+          }
+        }
+      },
+      "inline_response_200_1" : {
+        "type" : "object",
+        "properties" : {
+          "isWorking" : {
+            "type" : "boolean",
+            "example" : false
+          }
+        },
+        "example" : {
+          "isWorking" : false
+        }
+      },
+      "inline_response_200_2" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/Stopwatch"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "ellapsedTime" : {
+              "type" : "string",
+              "format" : "data-time",
+              "example" : "2020-12-09 16:09:53"
+            }
+          }
+        } ]
+      },
+      "inline_response_200_3" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/Stopwatch"
+        }, {
+          "type" : "object",
+          "properties" : {
+            "timeFlags" : {
+              "type" : "string",
+              "format" : "data-time",
+              "example" : "2020-12-09 16:09:53"
+            }
+          }
+        } ]
+      }
+    }
+  }
+}

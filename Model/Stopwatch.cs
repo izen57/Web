@@ -7,6 +7,10 @@ namespace Model {
 		public System.Diagnostics.Stopwatch Timing { get; set; }
 		public SortedSet<DateTime> TimeFlags { get; set; }
 		public bool IsWorking { get; set; }
+		
+		public Stopwatch()
+		{
+		}
 
 		public Stopwatch(string name, Color stopwatchColor, System.Diagnostics.Stopwatch timing, SortedSet<DateTime> timeFlags, bool isWorking) {
 			Name = name;
