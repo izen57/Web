@@ -4,8 +4,8 @@ namespace Logic
 {
 	public interface INoteService
 	{
-		void Create(Note note);
-		void Edit(Note note);
+		Note Create(Note note);
+		Note Edit(Note note);
 		void Delete(Guid id);
 		List<Note> GetAllNotesList();
 		Note? GetNote(Guid guid);

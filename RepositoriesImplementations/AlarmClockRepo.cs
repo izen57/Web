@@ -29,7 +29,7 @@ namespace RepositoriesImplementations
 			Log.Logger.Information("Создана папка для будильников.");
 		}
 
-		public void Create(AlarmClock alarmClock)
+		public AlarmClock Create(AlarmClock alarmClock)
 		{
 			if (_isoStore.AvailableFreeSpace <= 0)
 			{
@@ -66,10 +66,10 @@ namespace RepositoriesImplementations
 				$"{alarmClock.AlarmClockColor.Name}," +
 				$"{alarmClock.IsWorking}."
 			);
-			
+			return alarmClock;
 		}
 
-		public void Edit(AlarmClock alarmClock, DateTime oldTime)
+		public AlarmClock Edit(AlarmClock alarmClock, DateTime oldTime)
 		{
 			IsolatedStorageFileStream isoStream;
 			try
@@ -110,7 +110,7 @@ namespace RepositoriesImplementations
 				$"Старое название файла: \"alarmclocks/{oldTime:dd/MM/yyyy HH-mm-ss}.txt\".\n" +
 				$"Новое название файла: \"alarmclocks/{alarmClock.AlarmTime:dd/MM/yyyy HH-mm-ss}.txt\"."
 			);
-			
+			return alarmClock;
 		}
 
 		public void Delete(DateTime alarmTime)

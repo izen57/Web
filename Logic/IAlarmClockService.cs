@@ -4,8 +4,8 @@ namespace Logic
 {
 	public interface IAlarmClockService
 	{
-		void Create(AlarmClock alarmCloc);
-		void Edit(AlarmClock alarmCloc, DateTime oldTime);
+		AlarmClock Create(AlarmClock alarmCloc);
+		AlarmClock Edit(AlarmClock alarmCloc, DateTime oldTime);
 		void Delete(DateTime alarmTime);
 		AlarmClock? GetAlarmClock(DateTime dateTime);
 		List<AlarmClock> GetAllAlarmClocks();

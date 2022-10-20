@@ -4,16 +4,14 @@ using Microsoft.AspNetCore.Mvc;
 
 using Model;
 
-using Serilog;
-
 namespace WebAPI.Controllers
 {
 	[ApiController]
-	public class AlarmClockController: ControllerBase
+	public class AlarmClocksController: ControllerBase
 	{
 		private readonly IAlarmClockService _alarmClockService;
 
-		public AlarmClockController(IAlarmClockService alarmClockService)
+		public AlarmClocksController(IAlarmClockService alarmClockService)
 		{
 			_alarmClockService = alarmClockService;
 		}
@@ -43,17 +41,24 @@ namespace WebAPI.Controllers
 		/// Создаёт новый будильник
 		/// </summary>
 		/// <param name="alarmClock">Создаваемый будильник</param>
-		/// <returns>Созданный будильник</returns>
 		/// <respons code="201">Будильник успешно создан</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
+		/// <respons code="409">Будильник на такие дату и время уже существует</respons>
 		[Route("/alarmclock")]
 		[HttpPost]
-		[ProducesResponseType(StatusCodes.Status201Created, Type = typeof(string))]
+		[ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AlarmClock))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public ActionResult CreateAlarmClock([FromBody] AlarmClock alarmClock)
 		{
-			_alarmClockService.Create(alarmClock);
-			return new CreatedResult("AlarmClocks isolated storage.", null);
+			try
+			{
+				_alarmClockService.Create(alarmClock);
+			}
+			catch
+			{
+				return new ConflictResult();
+			}
+			return new CreatedResult("Alarm clocks isolated storage", alarmClock);
 		}
 
 		/// <summary>
@@ -61,26 +66,26 @@ namespace WebAPI.Controllers
 		/// </summary>
 		/// <param name="alarmClock">Изменяемый будильник</param>
 		/// <param name="alarmClockTime">Старое время будильника</param>
-		/// <returns>Изменённый будильник</returns>
 		/// <respons code="200">Существующий будильник изменён</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
 		/// <respons code="404">Будильник не найден</respons>
 		[Route("/alarmclock/{alarmClockTime}")]
 		[HttpPut]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AlarmClock))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public ActionResult EditAlarmClock([FromBody] AlarmClock alarmClock, [FromRoute] DateTime alarmClockTime)
 		{
+			AlarmClock alarm;
 			try
 			{
-				_alarmClockService.Edit(alarmClock, alarmClockTime);
+				alarm = _alarmClockService.Edit(alarmClock, alarmClockTime);
 			}
 			catch
 			{
 				return new NotFoundResult();
 			}
-			return new OkResult();
+			return new OkObjectResult(alarm);
 		}
 
 		/// <summary>
@@ -134,6 +139,7 @@ namespace WebAPI.Controllers
 		/// <summary>
 		/// Инвертирует работу будильника
 		/// </summary>
+		/// <description>Если будильник был выключен, то включает его. Если будильник был включён - выключает.</description>
 		/// <param name="alarmClockTime">Время искомого будильника</param>
 		/// <returns>Изменённый будильник</returns>
 		/// <respons code="200">Работа будильника успешно инвертирована</respons>

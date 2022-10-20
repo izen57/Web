@@ -13,14 +13,14 @@ namespace Logic
 			_repository = repo ?? throw new ArgumentNullException(nameof(repo));
 		}
 
-		public void Create(AlarmClock alarmClock)
+		public AlarmClock Create(AlarmClock alarmClock)
 		{
-			_repository.Create(alarmClock);
+			return _repository.Create(alarmClock);
 		}
 
-		public void Edit(AlarmClock alarmClock, DateTime oldTime)
+		public AlarmClock Edit(AlarmClock alarmClock, DateTime oldTime)
 		{
-			_repository.Edit(alarmClock, oldTime);
+			return _repository.Edit(alarmClock, oldTime);
 		}
 
 		public void Delete(DateTime alarmTime)

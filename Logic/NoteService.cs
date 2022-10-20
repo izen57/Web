@@ -20,12 +20,12 @@ namespace Logic {
 			_checkForTime.Enabled = true;
 		}
 
-		public void Create(Note note) {
-			_repository.Create(note);
+		public Note Create(Note note) {
+			return _repository.Create(note);
 		}
 
-		public void Edit(Note note) {
-			_repository.Edit(note);
+		public Note Edit(Note note) {
+			return _repository.Edit(note);
 		}
 
 		public void Delete(Guid id) {

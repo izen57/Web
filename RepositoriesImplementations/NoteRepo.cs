@@ -15,7 +15,7 @@ namespace RepositoriesImplementations
 		{
 			try
 			{
-				_isoStore = IsolatedStorageFile.GetUserStoreForApplication();
+				_isoStore = IsolatedStorageFile.GetUserStoreForAssembly();
 				_isoStore.CreateDirectory("notes");
 			}
 			catch (Exception ex)
@@ -29,7 +29,7 @@ namespace RepositoriesImplementations
 			Log.Logger.Information("Создана папка для заметок.");
 		}
 
-		public void Create(Note note)
+		public Note Create(Note note)
 		{
 			if (_isoStore.AvailableFreeSpace <= 0)
 			{
@@ -58,16 +58,18 @@ namespace RepositoriesImplementations
 			TextNote.WriteLine(note.CreationTime);
 			TextNote.WriteLine(note.Body);
 			TextNote.WriteLine(note.IsTemporal);
-			Log.Logger.Error(
+			Log.Logger.Information(
 				$"Создан файл заметки со следующей информацией:\n" +
 				$"{note.Id}," +
 				$"{note.CreationTime}," +
 				$"{note.Body}," +
 				$"{note.IsTemporal}."
 			);
+
+			return note;
 		}
 
-		public void Edit(Note note)
+		public Note Edit(Note note)
 		{
 			IsolatedStorageFileStream isoStream;
 			try
@@ -100,6 +102,8 @@ namespace RepositoriesImplementations
 				$"{note.Body}," +
 				$"{note.IsTemporal}."
 			);
+
+			return note;
 		}
 
 		public void Delete(Guid Id)
