@@ -9,6 +9,7 @@ namespace Logic
 		void Delete(DateTime alarmTime);
 		AlarmClock? GetAlarmClock(DateTime dateTime);
 		List<AlarmClock> GetAllAlarmClocks();
+		List<AlarmClock> GetAlarmClocks(QueryStringParameters param);
 		void InvertWork(AlarmClock alarmClock);
 	}
 }

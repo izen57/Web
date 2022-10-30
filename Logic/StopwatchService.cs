@@ -12,6 +12,11 @@ namespace Logic {
 			_stopwatch = stopwatch;
 		}
 
+		public void EditName(string name)
+		{
+			_stopwatch.Name = name;
+		}
+
 		public void Set() {
 			_stopwatch.Timing.Start();
 			_stopwatch.IsWorking = true;

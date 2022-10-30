@@ -3,10 +3,10 @@ using RepositoriesImplementations;
 using Logic;
 using Model;
 
-namespace TestPPO
+namespace Tests
 {
 	[TestClass]
-	public class IntegrationNoteTests
+	public class NoteWithoutMoqTests
 	{
 		[TestMethod]
 		public void NoteTest()

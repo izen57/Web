@@ -33,7 +33,7 @@ namespace Logic {
 		}
 
 		public List<Note> GetAllNotesList() {
-			return _repository.GetAllNotesList();
+			return _repository.GetAllNotes();
 		}
 
 		public Note? GetNote(Guid guid)
@@ -49,6 +49,11 @@ namespace Logic {
 					Log.Logger.Information($"Заметка удалена автоматически по истечении срока. Идентификатор заметки: {note.Id}.");
 					_repository.Delete(note.Id);
 				}
+		}
+
+		public List<Note> GetNotesByQuery(QueryStringParameters param)
+		{
+			return _repository.GetNotesByQuery(param);
 		}
 	}
 }

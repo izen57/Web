@@ -35,7 +35,7 @@ namespace RepositoriesImplementations
 			{
 				Log.Logger.Error("Место в защищённом хранилище будильников закончилось.");
 				throw new AlarmClockCreateException(
-					"AlarmClockCreate: Место в защищённом хранилище будильников закончилось.",
+					"AlarmClockCreate: Невозможно создать новый будильник.",
 					new IsolatedStorageException()
 				);
 			}
@@ -50,7 +50,7 @@ namespace RepositoriesImplementations
 			{
 				Log.Logger.Error($"Файл с названием \"alarmclocks/{alarmClock.AlarmTime:dd/MM/yyyy HH-mm-ss}.txt\" нельзя открыть.");
 				throw new AlarmClockEditException(
-					$"AlarmClockEdit: Файл с названием \"alarmclocks/{alarmClock.AlarmTime:dd/MM/yyyy HH-mm-ss}.txt\" нельзя открыть.",
+					$"AlarmClockEdit: Не удалось создать будильник на дату и время \"alarmclocks/{alarmClock.AlarmTime:dd/MM/yyyy HH-mm-ss}.txt\".",
 					ex
 				);
 			}
@@ -85,7 +85,7 @@ namespace RepositoriesImplementations
 			{
 				Log.Logger.Error($"Файл с названием \"alarmclocks/{oldTime:dd/MM/yyyy HH-mm-ss}.txt\" не найден.");
 				throw new AlarmClockEditException(
-					$"AlarmClockEdit: Файл с названием \"alarmclocks/{oldTime:dd/MM/yyyy HH-mm-ss}.txt\" не найден.",
+					$"AlarmClockEdit: Будильник на {oldTime:dd/MM/yyyy HH-mm-ss} не найден.",
 					ex
 				);
 			}
@@ -130,7 +130,7 @@ namespace RepositoriesImplementations
 			{
 				Log.Logger.Error($"Файл с названием \"alarmclocks/{alarmTime:dd/MM/yyyy HH-mm-ss}.txt\" не найден.");
 				throw new AlarmClockDeleteException(
-					$"AlarmClockDelete: Файл с названием \"alarmclocks/{alarmTime:dd/MM/yyyy HH-mm-ss}.txt\" не найден.",
+					$"AlarmClockDelete: Будильник на {alarmTime:dd/MM/yyyy HH-mm-ss} не найден.",
 					ex
 				);
 			}
@@ -188,7 +188,7 @@ namespace RepositoriesImplementations
 			return null;
 		}
 
-		public List<AlarmClock> GetAllAlarmClocksList()
+		public List<AlarmClock> GetAllAlarmClocks()
 		{
 			string[] filelist;
 			try
@@ -212,6 +212,14 @@ namespace RepositoriesImplementations
 			}
 
 			return alarmClockList;
+		}
+
+		public List<AlarmClock> GetAlarmClocksByQuery(QueryStringParameters param)
+		{
+			return GetAllAlarmClocks()
+				.Skip((param.PageNumber-1) * param.PageSize)
+				.Take(param.PageSize)
+				.ToList();
 		}
 	}
 }

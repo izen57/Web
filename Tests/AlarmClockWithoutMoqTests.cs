@@ -5,9 +5,9 @@ using Model;
 
 using System.Drawing;
 
-namespace TestPPO
+namespace Tests
 {
-	public class AlarmClockIntegraionTests
+	public class AlarmClockWithoutMoqTests
 	{
 		[TestMethod]
 		public void AlarmClockTest()

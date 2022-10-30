@@ -5,6 +5,7 @@ namespace Logic
 {
 	public interface IStopwatchService
 	{
+		void EditName(string name);
 		void Set();
 		void Reset();
 		long Stop();

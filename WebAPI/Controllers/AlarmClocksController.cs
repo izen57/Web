@@ -1,12 +1,17 @@
-﻿using Logic;
+﻿using Exceptions.AlarmClockExceptions;
+
+using Logic;
 
 using Microsoft.AspNetCore.Mvc;
 
 using Model;
 
+using WebAPI.DataTransferObject;
+
 namespace WebAPI.Controllers
 {
 	[ApiController]
+	[Produces("application/json")]
 	public class AlarmClocksController: ControllerBase
 	{
 		private readonly IAlarmClockService _alarmClockService;
@@ -20,72 +25,76 @@ namespace WebAPI.Controllers
 		/// Возвращает информацию о всех будильниках
 		/// </summary>
 		/// <returns>Список всех будильников</returns>
+		/// <param name="param">Номер и размер страницы</param>
 		/// <respons code="200">Будильники успешно возвращены</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
-		/// <respons code="404">Какие-либо будильники не найдены</respons>
-		[Route("/alarmclock")]
-		[HttpGet]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<AlarmClock>))]
+		[HttpGet("/api/v1/alarmclocks")]
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<AlarmClockDTO>))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public ActionResult GetAllAlarmClocks()
+		public ActionResult GetAlarmClocks([FromQuery] QueryStringParameters param)
 		{
-			var list = _alarmClockService.GetAllAlarmClocks();
-			if (list.Count == 0)
-				return new NotFoundResult();
+			var list = _alarmClockService.GetAlarmClocks(param);
 
-			return new OkObjectResult(list);
+			List<AlarmClockDTO> listDTO = new();
+			foreach (AlarmClock alarmClock in list)
+				listDTO.Append(AlarmClockDTO.ToDTO(alarmClock));
+
+			return new OkObjectResult(listDTO);
 		}
 
 		/// <summary>
 		/// Создаёт новый будильник
 		/// </summary>
-		/// <param name="alarmClock">Создаваемый будильник</param>
+		/// <param name="alarmClockDTO">Создаваемый будильник</param>
 		/// <respons code="201">Будильник успешно создан</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
-		/// <respons code="409">Будильник на такие дату и время уже существует</respons>
-		[Route("/alarmclock")]
-		[HttpPost]
-		[ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AlarmClock))]
+		/// <respons code="500">Будильник на такие дату и время уже существует</respons>
+		[HttpPost("api/v1/alarmclocks")]
+		[ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AlarmClockDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public ActionResult CreateAlarmClock([FromBody] AlarmClock alarmClock)
+		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+		public ActionResult CreateAlarmClock([FromBody] AlarmClockDTO alarmClockDTO)
 		{
 			try
 			{
-				_alarmClockService.Create(alarmClock);
+				AlarmClock alarmClock = AlarmClockDTO.FromDTO(alarmClockDTO);
+				alarmClockDTO = AlarmClockDTO.ToDTO(_alarmClockService.Create(alarmClock));
 			}
 			catch
 			{
-				return new ConflictResult();
+				return StatusCode(500);
 			}
-			return new CreatedResult("Alarm clocks isolated storage", alarmClock);
+			return new CreatedResult("Alarm clocks' isolated storage", alarmClockDTO);
 		}
 
 		/// <summary>
 		/// Обновляет существующий будильник по дате и времени
 		/// </summary>
-		/// <param name="alarmClock">Изменяемый будильник</param>
+		/// <param name="alarmClockDTO">Изменяемый будильник</param>
 		/// <param name="alarmClockTime">Старое время будильника</param>
 		/// <respons code="200">Существующий будильник изменён</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
 		/// <respons code="404">Будильник не найден</respons>
-		[Route("/alarmclock/{alarmClockTime}")]
-		[HttpPut]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AlarmClock))]
+		[HttpPut("api/v1/alarmclocks/{alarmClockTime}")]
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AlarmClockDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public ActionResult EditAlarmClock([FromBody] AlarmClock alarmClock, [FromRoute] DateTime alarmClockTime)
+		public ActionResult EditAlarmClock([FromBody] AlarmClockDTO alarmClockDTO, [FromRoute] DateTime alarmClockTime)
 		{
-			AlarmClock alarm;
 			try
 			{
-				alarm = _alarmClockService.Edit(alarmClock, alarmClockTime);
+				AlarmClock alarmClock = AlarmClockDTO.FromDTO(alarmClockDTO);
+				alarmClockDTO = AlarmClockDTO.ToDTO(_alarmClockService.Edit(alarmClock, alarmClockTime));
 			}
-			catch
+			catch (AlarmClockEditException)
 			{
 				return new NotFoundResult();
 			}
-			return new OkObjectResult(alarm);
+			catch
+			{
+				return new BadRequestResult();
+			}
+			return new OkObjectResult(alarmClockDTO);
 		}
 
 		/// <summary>
@@ -96,16 +105,15 @@ namespace WebAPI.Controllers
 		/// <respons code="200">Будильник найден</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
 		/// <respons code="404">Будильник не найден</respons>
-		[Route("/alarmclock/{alarmClockTime}")]
-		[HttpGet]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AlarmClock))]
+		[HttpGet("api/v1/alarmclocks/{alarmClockTime}")]
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AlarmClockDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public ActionResult GetAlarmClock([FromRoute] DateTime alarmClockTime)
 		{
 			var alarmClock = _alarmClockService.GetAlarmClock(alarmClockTime);
 			if (alarmClock != null)
-				return new OkObjectResult(alarmClock);
+				return new OkObjectResult(AlarmClockDTO.ToDTO(alarmClock));
 			else
 				return new NotFoundResult();
 		}
@@ -118,8 +126,7 @@ namespace WebAPI.Controllers
 		/// <respons code="200">Будильник успешно удалён</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
 		/// <respons code="404">Будильник не найден</respons>
-		[Route("/alarmclock/{alarmClockTime}")]
-		[HttpDelete]
+		[HttpDelete("api/v1/alarmclocks/{alarmClockTime}")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -129,38 +136,15 @@ namespace WebAPI.Controllers
 			{
 				_alarmClockService.Delete(alarmClockTime);
 			}
-			catch
+			catch (AlarmClockDeleteException)
 			{
 				return new NotFoundResult();
+			}
+			catch
+			{
+				return new BadRequestResult();
 			}
 			return new OkResult();
-		}
-
-		/// <summary>
-		/// Инвертирует работу будильника
-		/// </summary>
-		/// <description>Если будильник был выключен, то включает его. Если будильник был включён - выключает.</description>
-		/// <param name="alarmClockTime">Время искомого будильника</param>
-		/// <returns>Изменённый будильник</returns>
-		/// <respons code="200">Работа будильника успешно инвертирована</respons>
-		/// <respons code="400">Ошибка синтаксиса</respons>
-		/// <respons code="404">Будильник не найден</respons>
-		[Route("/alarmclock/{alarmClockTime}/invertWork")]
-		[HttpPatch]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
-		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public ActionResult InvertAlarmClock([FromRoute] DateTime alarmClockTime)
-		{
-			try
-			{
-				_alarmClockService.InvertWork(_alarmClockService.GetAlarmClock(alarmClockTime));
-			}
-			catch
-			{
-				return new NotFoundResult();
-			}
-			return new OkObjectResult(true);
 		}
 	}
 }

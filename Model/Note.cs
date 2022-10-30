@@ -1,8 +1,14 @@
-﻿namespace Model {
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Model {
 	public class Note {
+		[Required]
 		public Guid Id { get; private set; }
+		[Required]
 		public DateTime CreationTime { get; set; }
+		[Required]
 		public string Body { get; set; }
+		[Required]
 		public bool IsTemporal { get; set; }
 
 		public Note()

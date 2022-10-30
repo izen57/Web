@@ -35,7 +35,12 @@ namespace Logic
 
 		public List<AlarmClock> GetAllAlarmClocks()
 		{
-			return _repository.GetAllAlarmClocksList();
+			return _repository.GetAllAlarmClocks();
+		}
+
+		public List<AlarmClock> GetAlarmClocks(QueryStringParameters param)
+		{
+			return _repository.GetAlarmClocksByQuery(param);
 		}
 
 		public void InvertWork(AlarmClock alarmClock)

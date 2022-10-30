@@ -33,9 +33,9 @@ namespace RepositoriesImplementations
 		{
 			if (_isoStore.AvailableFreeSpace <= 0)
 			{
-				Log.Logger.Error("Место в папке заметок закончилось.");
+				Log.Logger.Error("Место в хранилище заметок закончилось.");
 				throw new NoteCreateException(
-					"NoteCreate: Место в папке заметок закончилось.",
+					"NoteCreate: В системе слишком много заметок.",
 					new IsolatedStorageException()
 				);
 			}
@@ -48,8 +48,8 @@ namespace RepositoriesImplementations
 			catch (Exception ex)
 			{
 				Log.Logger.Error($"Файл с названием \"notes/{note.Id}.txt\" нельзя открыть.");
-				throw new AlarmClockEditException(
-					$"Файл с названием \"notes/{note.Id}.txt\" нельзя открыть.",
+				throw new NoteCreateException(
+					$"Заметку с идентификатором {note.Id} нельзя открыть.",
 					ex
 				);
 			}
@@ -85,7 +85,7 @@ namespace RepositoriesImplementations
 			{
 				Log.Logger.Error($"Файл с названием \"notes/{note.Id}.txt\" не найден.");
 				throw new NoteEditException(
-					$"NoteEdit: Файл с названием \"notes/{note.Id}.txt\" не найден.",
+					$"NoteEdit: Заметка с идентификатором {note.Id} не найдена.",
 					ex
 				);
 			}
@@ -122,7 +122,7 @@ namespace RepositoriesImplementations
 			{
 				Log.Logger.Error($"{DateTime.Now}: Файл с названием \"notes/{Id}.txt\" не найден.");
 				throw new NoteDeleteException(
-					$"NoteDelete: Файл с названием \"notes/{Id}.txt\" не найден.",
+					$"NoteDelete: Заметка с идентификатором {Id} не найдена.",
 					ex
 				);
 			}
@@ -178,7 +178,7 @@ namespace RepositoriesImplementations
 			return null;
 		}
 
-		public List<Note> GetAllNotesList()
+		public List<Note> GetAllNotes()
 		{
 			string[] filelist;
 			try
@@ -202,6 +202,14 @@ namespace RepositoriesImplementations
 			}
 
 			return noteList;
+		}
+
+		public List<Note> GetNotesByQuery(QueryStringParameters param)
+		{
+			return GetAllNotes()
+				.Skip((param.PageNumber-1) * param.PageSize)
+				.Take(param.PageSize)
+				.ToList();
 		}
 	}
 }

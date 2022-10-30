@@ -9,5 +9,6 @@ namespace Logic
 		void Delete(Guid id);
 		List<Note> GetAllNotesList();
 		Note? GetNote(Guid guid);
+		List<Note> GetNotesByQuery(QueryStringParameters param);
 	}
 }

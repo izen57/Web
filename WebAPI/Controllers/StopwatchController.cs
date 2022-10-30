@@ -1,13 +1,15 @@
 ﻿using Logic;
 
 using Microsoft.AspNetCore.Mvc;
-using Model;
 
 using System.Drawing;
+
+using WebAPI.DataTransferObject;
 
 namespace WebAPI.Controllers
 {
 	[ApiController]
+	[Produces("application/json")]
 	public class StopwatchController
 	{
 		private readonly IStopwatchService _stopwatchService;
@@ -20,101 +22,55 @@ namespace WebAPI.Controllers
 		/// <summary>
 		/// Возращает секундомер
 		/// </summary>
-		/// <returns>Секундомер</returns>
+		/// <returns>Cекундомер</returns>
+		/// <remarks cref="StopwatchDTO"></remarks>
 		/// <respons code="200">Секундомер найден</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
-		[Route("/stopwatch")]
-		[HttpGet]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Stopwatch))]
+		[HttpGet("api/v1/stopwatch")]
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StopwatchDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public ActionResult GetStopwatch()
 		{
-			return new OkObjectResult(_stopwatchService.Get());
+			return new OkObjectResult(StopwatchDTO.ToDTO(_stopwatchService.Get()));
 		}
 
+		//нужно доделать!!!
 		/// <summary>
-		/// Запускает секундомер
+		/// Изменяет параметр секундомера
 		/// </summary>
-		/// <returns>Секундомер</returns>
+		/// <returns>Изменённый секундомер</returns>
+		/// <param name="stopwatchDTO">Параметр секундомера</param>
 		/// <respons code="200">Секундомер запущен</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
-		[Route("/stopwatch/set")]
-		[HttpPatch]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Stopwatch))]
+		[HttpPatch("api/v1/stopwatch")]
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StopwatchDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public ActionResult SetStopwatch()
+		public ActionResult StopwatchAction([FromBody] object stopwatchDTO)
 		{
-			_stopwatchService.Set();
-
-			return new OkObjectResult(_stopwatchService.Get());
-		}
-
-		/// <summary>
-		/// Сбрасывает секундомер
-		/// </summary>
-		/// <returns>Секундомер</returns>
-		/// <respons code="200">Секундомер сброшен</respons>
-		/// <respons code="400">Ошибка синтаксиса</respons>
-		[Route("/stopwatch/reset")]
-		[HttpPatch]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Stopwatch))]
-		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public ActionResult ResetStopwatch()
-		{
-			_stopwatchService.Reset();
-
-			return new OkObjectResult(_stopwatchService.Get());
-		}
-
-		/// <summary>
-		/// Останавливает секундомер
-		/// </summary>
-		/// <returns>Секундомер</returns>
-		/// <respons code="200">Секундомер остановлен</respons>
-		/// <respons code="400">Ошибка синтаксиса</respons>
-		[Route("/stopwatch/stop")]
-		[HttpPatch]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Stopwatch))]
-		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public ActionResult StopStopwatch()
-		{
-			_stopwatchService.Stop();
-
-			return new OkObjectResult(_stopwatchService.Get());
-		}
-
-		/// <summary>
-		/// Устанавливает временной флаг
-		/// </summary>
-		/// <returns>Секундомер</returns>
-		/// <respons code="200">Флаг добавлен</respons>
-		/// <respons code="400">Ошибка синтаксиса</respons>
-		[Route("/stopwatch/addTimeFlag")]
-		[HttpPatch]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Stopwatch))]
-		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public ActionResult AddTimeFlags()
-		{
-			_stopwatchService.AddStopwatchFlag();
-
-			return new OkObjectResult(_stopwatchService.Get());
-		}
-
-		/// <summary>
-		/// Изменяет цвет секундомера
-		/// </summary>
-		/// <returns>Секундомер</returns>
-		/// <param name="stopwatchColor">Новый цвет секундомера</param>
-		/// <respons code="200">Цвет изменён</respons>
-		/// <respons code="400">Ошибка синтаксиса</respons>
-		[Route("/stopwatch/color")]
-		[HttpPatch]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Stopwatch))]
-		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public ActionResult ChangeColor([FromBody] string stopwatchColor)
-		{
-			_stopwatchService.EditColor(Color.FromName(stopwatchColor));
+			switch (stopwatchDTO.GetType().Name)
+			{
+				case null:
+					return new BadRequestResult();
+				case "System.String":
+					_stopwatchService.EditName(stopwatchDTO.ToString()!);
+					break;
+				case "System.Color":
+					_stopwatchService.EditColor(Color.FromName(stopwatchDTO.ToString()!));
+					break;
+				case "System.Boolean" when stopwatchDTO.ToString() == "true":
+					_stopwatchService.Set();
+					break;
+				case "System.Boolean" when stopwatchDTO.ToString() == "false":
+					if (_stopwatchService.Get().IsWorking == false)
+						_stopwatchService.Reset();
+					else
+						_stopwatchService.Stop();
+					break;
+				case "System.DateTime":
+					_stopwatchService.AddStopwatchFlag();
+					break;
+			}
 
 			return new OkObjectResult(_stopwatchService.Get());
 		}
