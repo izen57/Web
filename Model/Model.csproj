@@ -6,7 +6,8 @@
     <Nullable>enable</Nullable>
     <OutputType>Library</OutputType>
     <SignAssembly>True</SignAssembly>
-    <AssemblyOriginatorKeyFile>E:\web\keys\modelkey.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\keys\modelkey.snk</AssemblyOriginatorKeyFile>
+	<EnableWindowsTargeting>True</EnableWindowsTargeting>
   </PropertyGroup>
 
 </Project>

@@ -6,7 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <SignAssembly>True</SignAssembly>
-    <AssemblyOriginatorKeyFile>E:\web\keys\userinterfacekey.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\keys\userinterfacekey.snk</AssemblyOriginatorKeyFile>
+	<EnableWindowsTargeting>True</EnableWindowsTargeting>
   </PropertyGroup>
 
 </Project>
