@@ -2,12 +2,9 @@
 
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["keys/", "keys/"]
 COPY ["WebAPI/WebAPI.csproj", "WebAPI/"]
 COPY ["Data/Repositories.csproj", "Data/"]
 COPY ["Exceptions/Exceptions.csproj", "Exceptions/"]
@@ -26,6 +23,3 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "WebAPI.dll"]
-
-FROM nginx:alpine # use the nginx image that is found on docker hub
-COPY nginx.conf /../server/nginx.conf # copy the configuration file from the previous step
