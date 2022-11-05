@@ -103,20 +103,17 @@ namespace IO.Swagger
 		{
 			app.UseRouting();
 
-			//app.UseStaticFiles();
+			app.UseStaticFiles();
 			//app.UseMvc();
 
-			app.UseSwagger(/*c =>
-			{
-				c.RouteTemplate = "api/v1/swagger-original.json";
-			}*/);
+			app.UseSwagger();
 			app.UseSwaggerUI(c =>
 			{
 				//c.RoutePrefix = "api/v1";
 				c.SwaggerEndpoint("/swagger/0.1.0/swagger.json", "NotStopAlarm");
 			});
 
-			app.UseHttpsRedirection();
+			//app.UseHttpsRedirection();
 
 			app.UseEndpoints(endpoints =>
 			{

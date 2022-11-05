@@ -3,15 +3,22 @@ version: '3.4'
 services:
   webapi:
     image: ${DOCKER_REGISTRY-}webapi
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
     build:
       context: .
       dockerfile: WebAPI/Dockerfile
-    #ports:
-    # - "50352:50352"
-    # - "63253:443"
-    # - "50354:5001"
 
   nginx:
+    depends_on:
+     - webapi
     image: nginx
     ports:
      - "80:80"
+    volumes:
+     - ./WebAPI/server/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+networks:
+  default:
+    name: mynet
