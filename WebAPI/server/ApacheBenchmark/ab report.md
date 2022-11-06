@@ -1,9 +1,9 @@
-Запускаемая команда:
+Р—Р°РїСѓСЃРєР°РµРјР°СЏ РєРѕРјР°РЅРґР°:
 ```console
 ab -c 10 -n 10000 http://localhost/api/v1/index.html
 ```
 
-Без балансировки:
+Р‘РµР· Р±Р°Р»Р°РЅСЃРёСЂРѕРІРєРё:
 ```console
 This is ApacheBench, Version 2.3 <$Revision: 1901567 $>
 Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
@@ -61,7 +61,7 @@ Percentage of the requests served within a certain time (ms)
  100%     90 (longest request)
 ```
 
-С балансировкой:
+РЎ Р±Р°Р»Р°РЅСЃРёСЂРѕРІРєРѕР№:
 ```console
 This is ApacheBench, Version 2.3 <$Revision: 1901567 $>
 Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
