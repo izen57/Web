@@ -15,13 +15,6 @@ namespace IO.Swagger
 		/// <param name="args"></param>
 		public static void Main(string[] args)
 		{
-			Log.Logger = new LoggerConfiguration()
-				.WriteTo.File("logs/log.txt")
-				.CreateLogger();
-
-			foreach (var arg in args)
-				Log.Logger.Information($"{arg}0_0\n");
-
 			CreateWebHostBuilder(args).Build().Run();
 		}
 

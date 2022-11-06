@@ -120,16 +120,7 @@ namespace IO.Swagger
 				endpoints.MapControllers();
 			});
 
-			if (env.IsDevelopment())
-			{
-				app.UseDeveloperExceptionPage();
-			}
-			else
-			{
-				app.UseExceptionHandler("/Error");
-
-				app.UseHsts();
-			}
+			app.UseDeveloperExceptionPage();
 		}
 	}
 }

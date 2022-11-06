@@ -1,23 +1,40 @@
 version: '3.4'
 
 services:
-  webapi:
+  webapi: &conf
     image: ${DOCKER_REGISTRY-}webapi
-    environment:
+    environment: &env
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_URLS=http://+:80;
     build:
       context: .
       dockerfile: WebAPI/Dockerfile
 
+  webapi2:
+    <<: *conf
+    environment:
+     - ASPNETCORE_URLS=http://+:81;
+    ports:
+     - "81"
+
+  webapi3:
+    <<: *conf
+    environment:
+     - ASPNETCORE_URLS=http://+:82;
+    ports:
+     - "82"
+
   nginx:
     depends_on:
      - webapi
-    image: nginx
+     - webapi2
+     - webapi3
+    image: byjg/nginx-extras
     ports:
      - "80:80"
     volumes:
      - ./WebAPI/server/default.conf:/etc/nginx/conf.d/default.conf:ro
+     - ./WebAPI/wwwroot:/home/static:ro
 
 networks:
   default:

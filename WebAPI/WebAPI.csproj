@@ -33,16 +33,17 @@
 
 
 	<ItemGroup>
-    <Folder Include="wwwroot\api\v1\" />
-  </ItemGroup>
-
-
-	<ItemGroup>
 	  <ProjectReference Include="..\Data\Repositories.csproj" />
 	  <ProjectReference Include="..\Exceptions\Exceptions.csproj" />
 	  <ProjectReference Include="..\Logic\Logic.csproj" />
 	  <ProjectReference Include="..\Model\Model.csproj" />
 	  <ProjectReference Include="..\RepositoriesImplementations\RepositoriesImplementations.csproj" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Folder Include="server\ApacheBenchmark\" />
+	  <Folder Include="wwwroot\img\" />
 	</ItemGroup>
 
 
