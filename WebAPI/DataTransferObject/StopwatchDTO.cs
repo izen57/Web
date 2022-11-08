@@ -6,15 +6,16 @@ namespace WebAPI.DataTransferObject
 {
 	public class StopwatchDTO
 	{
-		public string Name { get; set; }
-		public string StopwatchColor { get; set; }
-		public System.Diagnostics.Stopwatch Timing { get; set; }
-		public SortedSet<DateTime> TimeFlags { get; set; }
-		public bool IsWorking { get; set; }
+		public string? Name { get; set; } = null;
+		public string? StopwatchColor { get; set; } = null;
+		public System.Diagnostics.Stopwatch? Timing { get; set; } = null;
+		public SortedSet<DateTime>? TimeFlags { get; set; } = null;
+		public bool? IsWorking { get; set; } = null;
+		public bool? ResetSignal { get; set; } = null;
 		
 		public StopwatchDTO() { }
 
-		public StopwatchDTO(string name, string stopwatchColor, System.Diagnostics.Stopwatch timing, SortedSet<DateTime> timeFlags, bool isWorking)
+		public StopwatchDTO(string? name, string? stopwatchColor, System.Diagnostics.Stopwatch? timing, SortedSet<DateTime>? timeFlags, bool? isWorking)
 		{
 			Name = name;
 			StopwatchColor = stopwatchColor;
@@ -34,7 +35,7 @@ namespace WebAPI.DataTransferObject
 			);
 		}
 
-		public static Stopwatch FromDTO(StopwatchDTO stopwatchDTO)
+/*		public static Stopwatch FromDTO(StopwatchDTO stopwatchDTO)
 		{
 			return new Stopwatch(
 				stopwatchDTO.Name,
@@ -44,5 +45,5 @@ namespace WebAPI.DataTransferObject
 				stopwatchDTO.IsWorking
 			);
 		}
-	}
+*/	}
 }

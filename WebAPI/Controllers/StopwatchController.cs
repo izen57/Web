@@ -35,42 +35,33 @@ namespace WebAPI.Controllers
 			return new OkObjectResult(StopwatchDTO.ToDTO(_stopwatchService.Get()));
 		}
 
-		//нужно доделать!!!
 		/// <summary>
-		/// Изменяет параметр секундомера
+		/// Изменяет параметры секундомера
 		/// </summary>
 		/// <returns>Изменённый секундомер</returns>
-		/// <param name="stopwatchDTO">Параметр секундомера</param>
-		/// <respons code="200">Секундомер запущен</respons>
+		/// <param name="stopwatchDTO">Изменяемые поля параметра</param>
+		/// <respons code="200">Секундомер изменён</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
 		[HttpPatch("api/v1/stopwatch")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StopwatchDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public ActionResult StopwatchAction([FromBody] object stopwatchDTO)
+		public ActionResult StopwatchAction([FromBody] StopwatchDTO stopwatchDTO)
 		{
-			switch (stopwatchDTO.GetType().Name)
-			{
-				case null:
-					return new BadRequestResult();
-				case "System.String":
-					_stopwatchService.EditName(stopwatchDTO.ToString()!);
-					break;
-				case "System.Color":
-					_stopwatchService.EditColor(Color.FromName(stopwatchDTO.ToString()!));
-					break;
-				case "System.Boolean" when stopwatchDTO.ToString() == "true":
-					_stopwatchService.Set();
-					break;
-				case "System.Boolean" when stopwatchDTO.ToString() == "false":
-					if (_stopwatchService.Get().IsWorking == false)
-						_stopwatchService.Reset();
-					else
-						_stopwatchService.Stop();
-					break;
-				case "System.DateTime":
-					_stopwatchService.AddStopwatchFlag();
-					break;
-			}
+			if (stopwatchDTO.Name is not null)
+				_stopwatchService.EditName(stopwatchDTO.Name);
+
+			if (stopwatchDTO.StopwatchColor is not null)
+				_stopwatchService.EditColor(Color.FromName(stopwatchDTO.StopwatchColor));
+
+			if (stopwatchDTO.IsWorking == true)
+				_stopwatchService.Set();
+			else if (stopwatchDTO.IsWorking == false)
+				_stopwatchService.Stop();
+
+			if (stopwatchDTO.ResetSignal == true)
+				_stopwatchService.Reset();
+			if (stopwatchDTO.TimeFlags is not null)
+				_stopwatchService.AddStopwatchFlag();
 
 			return new OkObjectResult(_stopwatchService.Get());
 		}

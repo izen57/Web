@@ -1,9 +1,12 @@
-﻿using Model;
-using System.IO.IsolatedStorage;
-using Serilog;
-using Exceptions.NoteExceptions;
+﻿using Exceptions.NoteExceptions;
+
+using Model;
+
 using Repositories;
-using Exceptions.AlarmClockExceptions;
+
+using Serilog;
+
+using System.IO.IsolatedStorage;
 
 namespace RepositoriesImplementations
 {

@@ -13,6 +13,7 @@ services:
   webapi2:
     <<: *conf
     environment:
+     - ASPNETCORE_ENVIRONMENT=Development
      - ASPNETCORE_URLS=http://+:81;
     ports:
      - "81"
@@ -20,6 +21,7 @@ services:
   webapi3:
     <<: *conf
     environment:
+     - ASPNETCORE_ENVIRONMENT=Development
      - ASPNETCORE_URLS=http://+:82;
     ports:
      - "82"

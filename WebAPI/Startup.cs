@@ -52,24 +52,27 @@ namespace IO.Swagger
 		/// <param name="services"></param>
 		public void ConfigureServices(IServiceCollection services)
 		{
-			// Add framework services.
 			services
 				.AddMvc()
 				.AddXmlSerializerFormatters();
-			services.AddControllers().AddNewtonsoftJson();
 
-			services.AddSingleton<IAlarmClockRepo, AlarmClockFileRepo>();
-			services.AddSingleton<INoteRepo, NoteFileRepo>();
-			services.AddSingleton(new Stopwatch(
-				"Секундомер",
-				System.Drawing.Color.White,
-				new System.Diagnostics.Stopwatch(),
-				new SortedSet<DateTime>(),
-				false
-			));
-			services.AddSingleton<IAlarmClockService, AlarmClockService>();
-			services.AddSingleton<INoteService, NoteService>();
-			services.AddSingleton<IStopwatchService, StopwatchService>();
+			services
+				.AddControllers()
+				.AddNewtonsoftJson();
+
+			services
+				.AddSingleton<IAlarmClockRepo, AlarmClockFileRepo>()
+				.AddSingleton<INoteRepo, NoteFileRepo>()
+				.AddSingleton(new Stopwatch(
+					"Секундомер",
+					System.Drawing.Color.White,
+					new System.Diagnostics.Stopwatch(),
+					new SortedSet<DateTime>(),
+					false
+				))
+				.AddSingleton<IAlarmClockService, AlarmClockService>()
+				.AddSingleton<INoteService, NoteService>()
+				.AddSingleton<IStopwatchService, StopwatchService>();
 
 			services
 				.AddSwaggerGen(c =>

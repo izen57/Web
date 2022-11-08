@@ -76,7 +76,7 @@ namespace WebAPI.Controllers
 		/// <summary>
 		/// Создаёт новую заметку
 		/// </summary>
-		/// <param name="noteDTO">Новая заметка</param>
+		/// <param name="noteDTOCreate">Новая заметка</param>
 		/// <respons code="201">Заметка успешно создана</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
 		/// <respons code="500">Заметка с таким идентификатором уже существует</respons>
@@ -84,11 +84,17 @@ namespace WebAPI.Controllers
 		[ProducesResponseType(StatusCodes.Status201Created, Type = typeof(NoteDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-		public ActionResult CreateNote([FromBody] NoteDTO noteDTO)
+		public ActionResult CreateNote([FromBody] NoteDTOCreate noteDTOCreate)
 		{
+			NoteDTO noteDTO;
 			try
 			{
-				Note note = new(Guid.NewGuid(), noteDTO.CreationTime, noteDTO.Body, noteDTO.IsTemporal);
+				Note note = new(
+					Guid.NewGuid(),
+					noteDTOCreate.CreationTime,
+					noteDTOCreate.Body,
+					noteDTOCreate.IsTemporal
+				);
 				noteDTO = NoteDTO.ToDTO(_noteService.Create(note));
 			}
 			catch (NoteCreateException)
@@ -115,6 +121,8 @@ namespace WebAPI.Controllers
 			try
 			{
 				note = NoteDTO.ToDTO(_noteService.GetNote(Id));
+				if (note is not null)
+					return new NotFoundResult();
 			}
 			catch (NoteGetException)
 			{

@@ -10,7 +10,7 @@ namespace Logic {
 
 		public NoteService(INoteRepo repo) {
 			Log.Logger = new LoggerConfiguration()
-				.WriteTo.File("LogNote.txt")
+				.WriteTo.File("logs/log.txt")
 				.CreateLogger();
 
 			_repository = repo ?? throw new ArgumentNullException(nameof(repo));
