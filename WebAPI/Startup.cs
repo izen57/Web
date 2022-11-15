@@ -9,6 +9,7 @@
  */
 using Logic;
 
+using Microsoft.AspNetCore.Builder;
 using Microsoft.OpenApi.Models;
 
 using Model;
@@ -18,6 +19,10 @@ using Repositories;
 using RepositoriesImplementations;
 
 using Serilog;
+
+using Swashbuckle.AspNetCore.SwaggerGen;
+
+using System.Linq;
 
 namespace IO.Swagger
 {
@@ -84,14 +89,15 @@ namespace IO.Swagger
 						Description = "NotStopAlarm (ASP.NET Core 3.1)",
 						Contact = new OpenApiContact()
 						{
-						   Name = "Swagger Codegen Contributors",
-						   Url = new Uri("https://github.com/swagger-api/swagger-codegen"),
-						   Email = ""
+							Name = "Swagger Codegen Contributors",
+							Url = new Uri("https://github.com/swagger-api/swagger-codegen"),
+							Email = ""
 						},
 						TermsOfService = new Uri("https://example.com/terms")
 					});
 					c.CustomSchemaIds(type => type.FullName);
 					c.IncludeXmlComments($"{AppContext.BaseDirectory}{Path.DirectorySeparatorChar}{_hostingEnv.ApplicationName}.xml");
+					c.DocumentFilter<CustomSwaggerFilter>();
 					c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
 				});
 		}
@@ -104,26 +110,43 @@ namespace IO.Swagger
 		/// <param name="loggerFactory"></param>
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
 		{
-			app.UseRouting();
+			app.UseRouting()
+				.UseStaticFiles()
+				.UseSwagger(c =>
+				{
+					c.RouteTemplate = Environment.GetEnvironmentVariable("SWAGGER_ROUTETEMPLATE");
+				})
+				.UseSwaggerUI(c =>
+				{
+					c.RoutePrefix = Environment.GetEnvironmentVariable("SWAGGER_ROUTEPREFIX");
+					c.SwaggerEndpoint(Environment.GetEnvironmentVariable("SWAGGER_SWAGGERENDPOINT"), "NotStopAlarm");
+				})
+				.UseEndpoints(endpoints =>
+				{
+					endpoints.MapControllers();
+				})
+				.UseDeveloperExceptionPage();
+		}
+	}
 
-			app.UseStaticFiles();
-			//app.UseMvc();
-
-			app.UseSwagger();
-			app.UseSwaggerUI(c =>
+	public class CustomSwaggerFilter: IDocumentFilter
+	{
+		public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
+		{
+			if (Environment.GetEnvironmentVariable("SWAGGER_ROUTEPREFIX") == "api/v1")
 			{
-				//c.RoutePrefix = "api/v1";
-				c.SwaggerEndpoint("/swagger/0.1.0/swagger.json", "NotStopAlarm");
-			});
-
-			//app.UseHttpsRedirection();
-
-			app.UseEndpoints(endpoints =>
+				var filter = swaggerDoc.Paths
+					.Where(x => x.Key.Contains("mirror/api/v1"))
+					.ToList();
+				filter.ForEach(x => swaggerDoc.Paths.Remove(x.Key));
+			}
+			else
 			{
-				endpoints.MapControllers();
-			});
-
-			app.UseDeveloperExceptionPage();
+				var filter = swaggerDoc.Paths
+					.Where(x => !x.Key.Contains("mirror/api/v1"))
+					.ToList();
+				filter.ForEach(x => swaggerDoc.Paths.Remove(x.Key));
+			}
 		}
 	}
 }

@@ -12,6 +12,8 @@ namespace WebAPI.Controllers
 {
 	[ApiController]
 	[Produces("application/json")]
+	[Route("api/v1/notes")]
+	[Route("mirror/api/v1/notes")]
 	public class NotesController: ControllerBase
 	{
 		private readonly INoteService _noteService;
@@ -28,7 +30,7 @@ namespace WebAPI.Controllers
 		/// <param name="param">Номер и размер страницы</param>
 		/// <respons code="200">Заметки успешно возвращены</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
-		[HttpGet("api/v1/notes")]
+		[HttpGet("")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<NoteDTO>))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public ActionResult GetAllNotes([FromQuery] QueryStringParameters param)
@@ -36,8 +38,9 @@ namespace WebAPI.Controllers
 			List<Note> list = _noteService.GetNotesByQuery(param);
 
 			List<NoteDTO> listDTO = new();
-			foreach (Note note in list)
-				listDTO.Append(NoteDTO.ToDTO(note));
+			if (listDTO.Count > 0)
+				foreach (Note note in list)
+					listDTO.Add(NoteDTO.ToDTO(note));
 
 			return new OkObjectResult(list);
 		}
@@ -46,22 +49,27 @@ namespace WebAPI.Controllers
 		/// Обновляет существующую заметку
 		/// </summary>
 		/// <returns>Изменённая заметка</returns>
-		/// <param name="noteDTO">Изменяемая заметка</param>
+		/// <param name="noteDTOCreate">Изменяемая заметка</param>
 		/// <param name="Id">Идентификатор заметки</param>
 		/// <respons code="200">Существующая заметка изменена</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
+		/// <respons code="403">У Вас нет прав доступа</respons>
 		/// <respons code="404">Заметка не найдена</respons>
-		[HttpPatch("api/v1/notes/{Id}")]
+		[HttpPatch("{Id}")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NoteDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public ActionResult EditNote([FromBody] NoteDTO noteDTO, [FromRoute] Guid Id)
+		public ActionResult EditNote([FromBody] NoteDTOCreate noteDTOCreate, [FromRoute] Guid Id)
 		{
+			Note note;
 			try
 			{
-				Note note = new(Id, noteDTO.CreationTime, noteDTO.Body, noteDTO.IsTemporal);
-				noteDTO = NoteDTO.ToDTO(_noteService.Edit(note));
-				return new OkObjectResult(noteDTO);
+				note = _noteService.GetNote(Id);
+			}
+			catch (NoteEditException e) when (e.InnerException.Message.Contains("Read-only file system"))
+			{
+				return StatusCode(403);
 			}
 			catch (NoteEditException)
 			{
@@ -71,6 +79,12 @@ namespace WebAPI.Controllers
 			{
 				return new BadRequestResult();
 			}
+
+			note.Body = noteDTOCreate.Body;
+			note.IsTemporal = note.IsTemporal;
+
+			NoteDTO noteDTO = NoteDTO.ToDTO(_noteService.Edit(note));
+			return new OkObjectResult(noteDTOCreate);
 		}
 
 		/// <summary>
@@ -79,10 +93,12 @@ namespace WebAPI.Controllers
 		/// <param name="noteDTOCreate">Новая заметка</param>
 		/// <respons code="201">Заметка успешно создана</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
+		/// <respons code="403">У Вас нет прав доступа</respons>
 		/// <respons code="500">Заметка с таким идентификатором уже существует</respons>
-		[HttpPost("api/v1/notes")]
+		[HttpPost("")]
 		[ProducesResponseType(StatusCodes.Status201Created, Type = typeof(NoteDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 		public ActionResult CreateNote([FromBody] NoteDTOCreate noteDTOCreate)
 		{
@@ -91,15 +107,18 @@ namespace WebAPI.Controllers
 			{
 				Note note = new(
 					Guid.NewGuid(),
-					noteDTOCreate.CreationTime,
 					noteDTOCreate.Body,
 					noteDTOCreate.IsTemporal
 				);
 				noteDTO = NoteDTO.ToDTO(_noteService.Create(note));
 			}
-			catch (NoteCreateException)
+			catch (NoteCreateException e) when (e.InnerException.Message.Contains("Read-only file system"))
 			{
-				return StatusCode(500);
+				return StatusCode(403);
+			}
+			catch (NoteCreateException e) when (e.InnerException.Message.Contains("already exists"))
+			{
+				return StatusCode(409);
 			}
 			return new CreatedResult("Notes isolated storage", noteDTO);
 		}
@@ -111,7 +130,7 @@ namespace WebAPI.Controllers
 		/// <respons code="200">Заметка найдена</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
 		/// <respons code="404">Заметка не найдена</respons>
-		[HttpGet("api/v1/notes/{Id}")]
+		[HttpGet("{Id}")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NoteDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -121,8 +140,6 @@ namespace WebAPI.Controllers
 			try
 			{
 				note = NoteDTO.ToDTO(_noteService.GetNote(Id));
-				if (note is not null)
-					return new NotFoundResult();
 			}
 			catch (NoteGetException)
 			{
@@ -141,16 +158,22 @@ namespace WebAPI.Controllers
 		/// <param name="Id">Идентификатор искомой заметки</param>
 		/// <respons code="200">Заметка успешно удалена</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
+		/// <respons code="403">У Вас нет прав доступа</respons>
 		/// <respons code="404">Заметка не найдена</respons>
-		[HttpDelete("api/v1/notes/{Id}")]
+		[HttpDelete("{Id}")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public ActionResult DeleteNote([FromRoute] Guid Id)
 		{
 			try
 			{
 				_noteService.Delete(Id);
+			}
+			catch (NoteDeleteException e) when (e.InnerException.Message.Contains("Read-only file system"))
+			{
+				return StatusCode(403);
 			}
 			catch (NoteDeleteException)
 			{

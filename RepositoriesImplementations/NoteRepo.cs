@@ -1,4 +1,5 @@
-﻿using Exceptions.NoteExceptions;
+﻿using Exceptions.AlarmClockExceptions;
+using Exceptions.NoteExceptions;
 
 using Model;
 
@@ -12,14 +13,14 @@ namespace RepositoriesImplementations
 {
 	public class NoteFileRepo: INoteRepo
 	{
-		IsolatedStorageFile _isoStore;
+		DirectoryInfo _isoStore;
 
 		public NoteFileRepo()
 		{
 			try
 			{
-				_isoStore = IsolatedStorageFile.GetUserStoreForAssembly();
-				_isoStore.CreateDirectory("notes");
+				_isoStore = new DirectoryInfo("IsolatedStorage");
+				_isoStore.CreateSubdirectory("notes");
 			}
 			catch (Exception ex)
 			{
@@ -34,19 +35,19 @@ namespace RepositoriesImplementations
 
 		public Note Create(Note note)
 		{
-			if (_isoStore.AvailableFreeSpace <= 0)
+			if (File.Exists($"IsolatedStorage/notes/{note.Id}.txt"))
 			{
-				Log.Logger.Error("Место в хранилище заметок закончилось.");
+				Log.Logger.Error($"Файл с названием \"notes/{note.Id}.txt\" нельзя открыть.");
 				throw new NoteCreateException(
-					"NoteCreate: В системе слишком много заметок.",
-					new IsolatedStorageException()
+					$"Заметку с идентификатором {note.Id} уже существует.",
+					new IOException("already exists")
 				);
 			}
 
-			IsolatedStorageFileStream isoStream;
+			FileStream isoStream;
 			try
 			{
-				isoStream = _isoStore.CreateFile($"notes/{note.Id}.txt");
+				isoStream = File.Create($"IsolatedStorage/notes/{note.Id}.txt");
 			}
 			catch (Exception ex)
 			{
@@ -74,14 +75,13 @@ namespace RepositoriesImplementations
 
 		public Note Edit(Note note)
 		{
-			IsolatedStorageFileStream isoStream;
+			FileStream isoStream;
 			try
 			{
 				isoStream = new(
-					$"notes/{note.Id}.txt",
+					$"IsolatedStorage/notes/{note.Id}.txt",
 					FileMode.Create,
-					FileAccess.Write,
-					_isoStore
+					FileAccess.Write
 				);
 			}
 			catch (Exception ex)
@@ -115,10 +115,9 @@ namespace RepositoriesImplementations
 			try
 			{
 				isoStream = new(
-					$"notes/{Id}.txt",
+					$"IsolatedStorage/notes/{Id}.txt",
 					FileMode.Open,
-					FileAccess.Write,
-					_isoStore
+					FileAccess.Write
 				);
 			}
 			catch (Exception ex)
@@ -131,7 +130,7 @@ namespace RepositoriesImplementations
 			}
 
 			isoStream.Close();
-			_isoStore.DeleteFile($"notes/{Id}.txt");
+			File.Delete($"IsolatedStorage/notes/{Id}.txt");
 
 			Log.Logger.Information($"Удалён файл заметки. Идентификатор заметки: {Id}.");
 		}
@@ -141,25 +140,24 @@ namespace RepositoriesImplementations
 			string[] filelist;
 			try
 			{
-				filelist = _isoStore.GetFileNames($"notes/{Id}.txt");
+				filelist = Directory.GetFiles("IsolatedStorage/notes", $"{Id}.txt");
 			}
 			catch (Exception ex)
 			{
 				Log.Logger.Error($"Папка для заметок в защищённом хранилище не найдена.");
 				throw new NoteGetException(
-					"GetNote: Папка для заметок в защищённом хранилище не найдена.",
+					"GetNote: Заметка в защищённом хранилище не найдена.",
 					ex
 				);
 			}
 
 			foreach (string fileName in filelist)
-				if (fileName.Replace(".txt", "") == Id.ToString())
+				if (fileName.Replace(".txt", "").Replace("IsolatedStorage/notes/", "") == Id.ToString())
 				{
-					using var readerStream = new StreamReader(new IsolatedStorageFileStream(
-						$"notes/{Id}.txt",
+					using var readerStream = new StreamReader(new FileStream(
+						$"IsolatedStorage/notes/{Id}.txt",
 						FileMode.Open,
-						FileAccess.Read,
-						_isoStore
+						FileAccess.Read
 					));
 					string? noteCreationTime = readerStream.ReadLine();
 					string? noteBody = readerStream.ReadLine();
@@ -186,7 +184,7 @@ namespace RepositoriesImplementations
 			string[] filelist;
 			try
 			{
-				filelist = _isoStore.GetFileNames("notes/");
+				filelist = Directory.GetFiles("IsolatedStorage/notes/");
 			}
 			catch (Exception ex)
 			{
@@ -200,7 +198,7 @@ namespace RepositoriesImplementations
 			List<Note> noteList = new();
 			foreach (string fileName in filelist)
 			{
-				var note = GetNote(Guid.Parse(fileName.Replace(".txt", "")));
+				var note = GetNote(Guid.Parse(fileName.Replace(".txt", "").Replace("IsolatedStorage/notes/", "")));
 				noteList.Add(note!);
 			}
 

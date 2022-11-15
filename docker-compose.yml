@@ -6,31 +6,62 @@ services:
     environment: &env
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80;
+      - SWAGGER_ROUTETEMPLATE=api/v1/{documentname}/swagger.json
+      - SWAGGER_ROUTEPREFIX=api/v1
+      - SWAGGER_SWAGGERENDPOINT=/api/v1/0.1.0/swagger.json
     build:
       context: .
       dockerfile: WebAPI/Dockerfile
+    volumes:
+     - ./IsolatedStorage:/app/IsolatedStorage
 
   webapi2:
     <<: *conf
     environment:
      - ASPNETCORE_ENVIRONMENT=Development
      - ASPNETCORE_URLS=http://+:81;
+     - SWAGGER_ROUTETEMPLATE=api/v1/{documentname}/swagger.json
+     - SWAGGER_ROUTEPREFIX=api/v1
+     - SWAGGER_SWAGGERENDPOINT=/api/v1/0.1.0/swagger.json
     ports:
      - "81"
+    volumes:
+     - ./IsolatedStorage:/app/IsolatedStorage:ro
 
   webapi3:
     <<: *conf
     environment:
      - ASPNETCORE_ENVIRONMENT=Development
      - ASPNETCORE_URLS=http://+:82;
+     - SWAGGER_ROUTETEMPLATE=api/v1/{documentname}/swagger.json
+     - SWAGGER_ROUTEPREFIX=api/v1
+     - SWAGGER_SWAGGERENDPOINT=/api/v1/0.1.0/swagger.json
     ports:
      - "82"
+    volumes:
+     - ./IsolatedStorage:/app/IsolatedStorage:ro
+
+  mirror:
+    image: ${DOCKER_REGISTRY-}webapi
+    container_name: mirror
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:83;
+      - SWAGGER_ROUTETEMPLATE=mirror/api/v1/{documentname}/swagger.json
+      - SWAGGER_ROUTEPREFIX=mirror/api/v1
+      - SWAGGER_SWAGGERENDPOINT=/mirror/api/v1/0.1.0/swagger.json
+    ports:
+     - "83"
+    build:
+      context: .
+      dockerfile: WebAPI/Dockerfile
 
   nginx:
     depends_on:
      - webapi
      - webapi2
      - webapi3
+     - mirror
     image: byjg/nginx-extras
     ports:
      - "80:80"

@@ -1,7 +1,7 @@
 Запускаемая команда:
 ```console
-ab -c 10 -n 10000 http://localhost/api/v1/index.html
-```
+ .\ab -c 10 -n 10000 'http://localhost/api/v1/alarmclocks?PageNumber=0&PageSize=1'
+ ```
 
 Без балансировки:
 ```console
@@ -10,55 +10,54 @@ Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
 Licensed to The Apache Software Foundation, http://www.apache.org/
 
 Benchmarking localhost (be patient)
+Completed 500 requests
 Completed 1000 requests
+Completed 1500 requests
 Completed 2000 requests
+Completed 2500 requests
 Completed 3000 requests
+Completed 3500 requests
 Completed 4000 requests
+Completed 4500 requests
 Completed 5000 requests
-Completed 6000 requests
-Completed 7000 requests
-Completed 8000 requests
-Completed 9000 requests
-Completed 10000 requests
-Finished 10000 requests
+Finished 5000 requests
 
 
-Server Software:        nginx/1.23.2
+Server Software:        webapis
 Server Hostname:        localhost
 Server Port:            80
 
-Document Path:          /api/v1/
-Document Length:        0 bytes
+Document Path:          /api/v1/alarmclocks?PageNumber=0&PageSize=1
+Document Length:        93 bytes
 
 Concurrency Level:      10
-Time taken for tests:   9.890 seconds
-Complete requests:      10000
+Time taken for tests:   25.925 seconds
+Complete requests:      5000
 Failed requests:        0
-Non-2xx responses:      10000
-Total transferred:      1530000 bytes
-HTML transferred:       0 bytes
-Requests per second:    1011.12 [#/sec] (mean)
-Time per request:       9.890 [ms] (mean)
-Time per request:       0.989 [ms] (mean, across all concurrent requests)
-Transfer rate:          151.08 [Kbytes/sec] received
+Total transferred:      1260000 bytes
+HTML transferred:       465000 bytes
+Requests per second:    192.86 [#/sec] (mean)
+Time per request:       51.850 [ms] (mean)
+Time per request:       5.185 [ms] (mean, across all concurrent requests)
+Transfer rate:          47.46 [Kbytes/sec] received
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.4      0       9
-Processing:     2   10   6.1      8      90
-Waiting:        2    9   6.1      8      89
-Total:          3   10   6.1      8      90
+Connect:        0    0   0.4      0       2
+Processing:    27   51  16.2     48     233
+Waiting:       27   51  16.2     48     233
+Total:         28   52  16.2     48     233
 
 Percentage of the requests served within a certain time (ms)
-  50%      8
-  66%     10
-  75%     11
-  80%     12
-  90%     15
-  95%     18
-  98%     23
-  99%     40
- 100%     90 (longest request)
+  50%     48
+  66%     52
+  75%     55
+  80%     58
+  90%     65
+  95%     75
+  98%    105
+  99%    127
+ 100%    233 (longest request)
 ```
 
 С балансировкой:
@@ -68,53 +67,52 @@ Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
 Licensed to The Apache Software Foundation, http://www.apache.org/
 
 Benchmarking localhost (be patient)
+Completed 500 requests
 Completed 1000 requests
+Completed 1500 requests
 Completed 2000 requests
+Completed 2500 requests
 Completed 3000 requests
+Completed 3500 requests
 Completed 4000 requests
+Completed 4500 requests
 Completed 5000 requests
-Completed 6000 requests
-Completed 7000 requests
-Completed 8000 requests
-Completed 9000 requests
-Completed 10000 requests
-Finished 10000 requests
+Finished 5000 requests
 
 
-Server Software:        nginx/1.23.2
+Server Software:        webapis
 Server Hostname:        localhost
 Server Port:            80
 
-Document Path:          /api/v1/
-Document Length:        0 bytes
+Document Path:          /api/v1/alarmclocks?PageNumber=0&PageSize=1
+Document Length:        93 bytes
 
 Concurrency Level:      10
-Time taken for tests:   19.033 seconds
-Complete requests:      10000
+Time taken for tests:   25.627 seconds
+Complete requests:      5000
 Failed requests:        0
-Non-2xx responses:      10000
-Total transferred:      1530000 bytes
-HTML transferred:       0 bytes
-Requests per second:    525.39 [#/sec] (mean)
-Time per request:       19.033 [ms] (mean)
-Time per request:       1.903 [ms] (mean, across all concurrent requests)
-Transfer rate:          78.50 [Kbytes/sec] received
+Total transferred:      1260000 bytes
+HTML transferred:       465000 bytes
+Requests per second:    195.11 [#/sec] (mean)
+Time per request:       51.253 [ms] (mean)
+Time per request:       5.125 [ms] (mean, across all concurrent requests)
+Transfer rate:          48.02 [Kbytes/sec] received
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.4      0       4
-Processing:     4   18   8.2     17      87
-Waiting:        4   18   8.1     16      86
-Total:          5   19   8.2     17      87
+Connect:        0    0   0.4      0       3
+Processing:    15   51  19.8     48     450
+Waiting:       15   50  19.8     47     450
+Total:         15   51  19.8     48     451
 
 Percentage of the requests served within a certain time (ms)
-  50%     17
-  66%     20
-  75%     22
-  80%     24
-  90%     28
-  95%     34
-  98%     40
-  99%     47
- 100%     87 (longest request)
+  50%     48
+  66%     51
+  75%     54
+  80%     56
+  90%     61
+  95%     68
+  98%     79
+  99%     91
+ 100%    451 (longest request)
 ```

@@ -12,6 +12,8 @@ namespace WebAPI.Controllers
 {
 	[ApiController]
 	[Produces("application/json")]
+	[Route("api/v1/alarmclocks")]
+	[Route("mirror/api/v1/alarmclocks")]
 	public class AlarmClocksController: ControllerBase
 	{
 		private readonly IAlarmClockService _alarmClockService;
@@ -28,7 +30,7 @@ namespace WebAPI.Controllers
 		/// <param name="param">Номер и размер страницы</param>
 		/// <respons code="200">Будильники успешно возвращены</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
-		[HttpGet("/api/v1/alarmclocks")]
+		[HttpGet("")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<AlarmClockDTO>))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public ActionResult GetAlarmClocks([FromQuery] QueryStringParameters param)
@@ -36,8 +38,9 @@ namespace WebAPI.Controllers
 			var list = _alarmClockService.GetAlarmClocks(param);
 
 			List<AlarmClockDTO> listDTO = new();
-			foreach (AlarmClock alarmClock in list)
-				listDTO.Append(AlarmClockDTO.ToDTO(alarmClock));
+			if (list.Count > 0)
+				foreach (AlarmClock alarmClock in list)
+					listDTO.Add(AlarmClockDTO.ToDTO(alarmClock));
 
 			return new OkObjectResult(listDTO);
 		}
@@ -48,10 +51,12 @@ namespace WebAPI.Controllers
 		/// <param name="alarmClockDTO">Создаваемый будильник</param>
 		/// <respons code="201">Будильник успешно создан</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
+		/// <respons code="403">У Вас нет прав доступа</respons>
 		/// <respons code="500">Будильник на такие дату и время уже существует</respons>
-		[HttpPost("api/v1/alarmclocks")]
+		[HttpPost("")]
 		[ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AlarmClockDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 		public ActionResult CreateAlarmClock([FromBody] AlarmClockDTO alarmClockDTO)
 		{
@@ -60,9 +65,13 @@ namespace WebAPI.Controllers
 				AlarmClock alarmClock = AlarmClockDTO.FromDTO(alarmClockDTO);
 				alarmClockDTO = AlarmClockDTO.ToDTO(_alarmClockService.Create(alarmClock));
 			}
-			catch
+			catch (AlarmClockCreateException e) when (e.InnerException.Message.Contains("Read-only file system"))
 			{
-				return StatusCode(500);
+				return StatusCode(403);
+			}
+			catch (AlarmClockCreateException e) when (e.InnerException.Message.Contains("already exists"))
+			{
+				return StatusCode(409);
 			}
 			return new CreatedResult("Alarm clocks' isolated storage", alarmClockDTO);
 		}
@@ -74,10 +83,12 @@ namespace WebAPI.Controllers
 		/// <param name="alarmClockTime">Старое время будильника</param>
 		/// <respons code="200">Существующий будильник изменён</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
+		/// <respons code="403">У Вас нет прав доступа</respons>
 		/// <respons code="404">Будильник не найден</respons>
-		[HttpPut("api/v1/alarmclocks/{alarmClockTime}")]
+		[HttpPut("{alarmClockTime}")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AlarmClockDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public ActionResult EditAlarmClock([FromBody] AlarmClockDTO alarmClockDTO, [FromRoute] DateTime alarmClockTime)
 		{
@@ -85,6 +96,10 @@ namespace WebAPI.Controllers
 			{
 				AlarmClock alarmClock = AlarmClockDTO.FromDTO(alarmClockDTO);
 				alarmClockDTO = AlarmClockDTO.ToDTO(_alarmClockService.Edit(alarmClock, alarmClockTime));
+			}
+			catch (AlarmClockEditException e) when (e.InnerException.Message.Contains("Read-only file system"))
+			{
+				return StatusCode(403);
 			}
 			catch (AlarmClockEditException)
 			{
@@ -105,7 +120,7 @@ namespace WebAPI.Controllers
 		/// <respons code="200">Будильник найден</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
 		/// <respons code="404">Будильник не найден</respons>
-		[HttpGet("api/v1/alarmclocks/{alarmClockTime}")]
+		[HttpGet("{alarmClockTime}")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AlarmClockDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -125,16 +140,22 @@ namespace WebAPI.Controllers
 		/// <returns>Изменённый будильник</returns>
 		/// <respons code="200">Будильник успешно удалён</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
+		/// <respons code="403">У Вас нет прав доступа</respons>
 		/// <respons code="404">Будильник не найден</respons>
-		[HttpDelete("api/v1/alarmclocks/{alarmClockTime}")]
+		[HttpDelete("{alarmClockTime}")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public ActionResult DeleteAlarmClock([FromRoute] DateTime alarmClockTime)
 		{
 			try
 			{
 				_alarmClockService.Delete(alarmClockTime);
+			}
+			catch (AlarmClockDeleteException e) when (e.InnerException.Message.Contains("Read-only file system"))
+			{
+				return StatusCode(403);
 			}
 			catch (AlarmClockDeleteException)
 			{
