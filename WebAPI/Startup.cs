@@ -9,7 +9,6 @@
  */
 using Logic;
 
-using Microsoft.AspNetCore.Builder;
 using Microsoft.OpenApi.Models;
 
 using Model;
@@ -21,8 +20,6 @@ using RepositoriesImplementations;
 using Serilog;
 
 using Swashbuckle.AspNetCore.SwaggerGen;
-
-using System.Linq;
 
 namespace IO.Swagger
 {
@@ -97,7 +94,7 @@ namespace IO.Swagger
 					});
 					c.CustomSchemaIds(type => type.FullName);
 					c.IncludeXmlComments($"{AppContext.BaseDirectory}{Path.DirectorySeparatorChar}{_hostingEnv.ApplicationName}.xml");
-					c.DocumentFilter<CustomSwaggerFilter>();
+					//c.DocumentFilter<CustomSwaggerFilter>();
 					c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
 				});
 		}
@@ -147,6 +144,7 @@ namespace IO.Swagger
 					.ToList();
 				filter.ForEach(x => swaggerDoc.Paths.Remove(x.Key));
 			}
+			swaggerDoc.Paths.Extensions = "mirror";
 		}
 	}
 }

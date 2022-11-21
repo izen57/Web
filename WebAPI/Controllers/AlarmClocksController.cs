@@ -13,7 +13,6 @@ namespace WebAPI.Controllers
 	[ApiController]
 	[Produces("application/json")]
 	[Route("api/v1/alarmclocks")]
-	[Route("mirror/api/v1/alarmclocks")]
 	public class AlarmClocksController: ControllerBase
 	{
 		private readonly IAlarmClockService _alarmClockService;

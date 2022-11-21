@@ -13,7 +13,6 @@ namespace WebAPI.Controllers
 	[ApiController]
 	[Produces("application/json")]
 	[Route("api/v1/notes")]
-	[Route("mirror/api/v1/notes")]
 	public class NotesController: ControllerBase
 	{
 		private readonly INoteService _noteService;

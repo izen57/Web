@@ -11,7 +11,6 @@ namespace WebAPI.Controllers
 	[ApiController]
 	[Produces("application/json")]
 	[Route("api/v1/stopwatch")]
-	[Route("mirror/api/v1/stopwatch")]
 	public class StopwatchController: ControllerBase
 	{
 		private readonly IStopwatchService _stopwatchService;
