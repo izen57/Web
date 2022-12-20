@@ -1,0 +1,68 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0-windows10.0.22621.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <DocumentationFile></DocumentationFile>
+    <UserSecretsId>c46acc54-8043-47a8-85d9-b4a3f32ee56d</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+	<EnableWindowsTargeting>True</EnableWindowsTargeting>
+	<DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <Optimize>False</Optimize>
+    <NoWarn>1701;1702;1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.10" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
+    <PackageReference Include="Serilog" Version="2.12.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="3.4.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="7.0.5" />
+  </ItemGroup>
+
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Data\Repositories.csproj" />
+	  <ProjectReference Include="..\Exceptions\Exceptions.csproj" />
+	  <ProjectReference Include="..\Logic\Logic.csproj" />
+	  <ProjectReference Include="..\Model\Model.csproj" />
+	  <ProjectReference Include="..\RepositoriesImplementations\RepositoriesImplementations.csproj" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Folder Include="server\ApacheBenchmark\" />
+	  <Folder Include="wwwroot\img\" />
+	</ItemGroup>
+
+
+	<!--<ItemGroup>
+	  <Reference Include="Exceptions">
+	    <HintPath>..\Exceptions\bin\Debug\net6.0-windows10.0.22621.0\Exceptions.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Logic">
+	    <HintPath>..\Logic\bin\Debug\net6.0-windows10.0.22621.0\Logic.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Model">
+	    <HintPath>..\Model\bin\Debug\net6.0-windows10.0.22621.0\Model.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Repositories">
+	    <HintPath>..\Data\bin\Debug\net6.0-windows10.0.22621.0\Repositories.dll</HintPath>
+	  </Reference>
+	  <Reference Include="RepositoriesImplementations">
+	    <HintPath>..\RepositoriesImplementations\bin\Debug\net6.0-windows10.0.22621.0\RepositoriesImplementations.dll</HintPath>
+	  </Reference>
+	</ItemGroup>-->
+
+</Project>

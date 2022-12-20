@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0-windows10.0.22621.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\keys\datakey.snk</AssemblyOriginatorKeyFile>
+	<EnableWindowsTargeting>True</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Serilog" Version="2.12.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Exceptions\Exceptions.csproj" />
+    <ProjectReference Include="..\Model\Model.csproj" />
+  </ItemGroup>
+
+	<!--<ItemGroup>
+		<Reference Include="Exceptions">
+			<HintPath>..\Exceptions\bin\Debug\net6.0-windows10.0.22621.0\Exceptions.dll</HintPath>
+		</Reference>
+		<Reference Include="Model">
+			<HintPath>..\Model\bin\Debug\net6.0-windows10.0.22621.0\Model.dll</HintPath>
+		</Reference>
+	</ItemGroup>-->
+
+</Project>
