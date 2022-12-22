@@ -19,8 +19,6 @@ using RepositoriesImplementations;
 
 using Serilog;
 
-using Swashbuckle.AspNetCore.SwaggerGen;
-
 namespace IO.Swagger
 {
 	/// <summary>
@@ -123,28 +121,6 @@ namespace IO.Swagger
 					endpoints.MapControllers();
 				})
 				.UseDeveloperExceptionPage();
-		}
-	}
-
-	public class CustomSwaggerFilter: IDocumentFilter
-	{
-		public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
-		{
-			if (Environment.GetEnvironmentVariable("SWAGGER_ROUTEPREFIX") == "api/v1")
-			{
-				var filter = swaggerDoc.Paths
-					.Where(x => x.Key.Contains("mirror/api/v1"))
-					.ToList();
-				filter.ForEach(x => swaggerDoc.Paths.Remove(x.Key));
-			}
-			else
-			{
-				var filter = swaggerDoc.Paths
-					.Where(x => !x.Key.Contains("mirror/api/v1"))
-					.ToList();
-				filter.ForEach(x => swaggerDoc.Paths.Remove(x.Key));
-			}
-			swaggerDoc.Paths.Extensions = "mirror";
 		}
 	}
 }
