@@ -1,6 +1,4 @@
-﻿using Model;
-
-namespace WebAPI.DataTransferObject
+﻿namespace WebAPI.DataTransferObject
 {
 	public class NoteDTOCreate
 	{

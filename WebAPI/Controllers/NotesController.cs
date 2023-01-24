@@ -1,5 +1,4 @@
 ﻿using Exceptions.NoteExceptions;
-
 using Logic;
 
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +9,7 @@ using WebAPI.DataTransferObject;
 
 namespace WebAPI.Controllers
 {
-	[ApiController]
+    [ApiController]
 	[Produces("application/json")]
 	[Route("api/v1/notes")]
 	public class NotesController: ControllerBase
@@ -66,11 +65,11 @@ namespace WebAPI.Controllers
 			{
 				note = _noteService.GetNote(Id);
 			}
-			catch (NoteEditException e) when (e.InnerException.Message.Contains("Read-only file system"))
+			catch (UserEditException e) when (e.InnerException.Message.Contains("Read-only file system"))
 			{
 				return StatusCode(403);
 			}
-			catch (NoteEditException)
+			catch (UserEditException)
 			{
 				return new NotFoundResult();
 			}
@@ -111,11 +110,11 @@ namespace WebAPI.Controllers
 				);
 				noteDTO = NoteDTO.ToDTO(_noteService.Create(note));
 			}
-			catch (NoteCreateException e) when (e.InnerException.Message.Contains("Read-only file system"))
+			catch (UserCreateException e) when (e.InnerException.Message.Contains("Read-only file system"))
 			{
 				return StatusCode(403);
 			}
-			catch (NoteCreateException e) when (e.InnerException.Message.Contains("already exists"))
+			catch (UserCreateException e) when (e.InnerException.Message.Contains("already exists"))
 			{
 				return StatusCode(409);
 			}
@@ -140,7 +139,7 @@ namespace WebAPI.Controllers
 			{
 				note = NoteDTO.ToDTO(_noteService.GetNote(Id));
 			}
-			catch (NoteGetException)
+			catch (UserGetException)
 			{
 				return new NotFoundResult();
 			}
@@ -170,11 +169,11 @@ namespace WebAPI.Controllers
 			{
 				_noteService.Delete(Id);
 			}
-			catch (NoteDeleteException e) when (e.InnerException.Message.Contains("Read-only file system"))
+			catch (UserDeleteException e) when (e.InnerException.Message.Contains("Read-only file system"))
 			{
 				return StatusCode(403);
 			}
-			catch (NoteDeleteException)
+			catch (UserDeleteException)
 			{
 				return new NotFoundResult();
 			}

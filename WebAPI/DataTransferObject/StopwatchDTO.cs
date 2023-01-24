@@ -35,15 +35,16 @@ namespace WebAPI.DataTransferObject
 			);
 		}
 
-/*		public static Stopwatch FromDTO(StopwatchDTO stopwatchDTO)
-		{
-			return new Stopwatch(
-				stopwatchDTO.Name,
-				Color.FromName(stopwatchDTO.StopwatchColor),
-				stopwatchDTO.Timing,
-				stopwatchDTO.TimeFlags,
-				stopwatchDTO.IsWorking
-			);
-		}
-*/	}
+		//public static Stopwatch FromDTO(StopwatchDTO stopwatchDTO, Guid ownerId)
+		//{
+		//	return new Stopwatch(
+		//		stopwatchDTO.Name,
+		//		Color.FromName(stopwatchDTO.StopwatchColor),
+		//		stopwatchDTO.Timing,
+		//		stopwatchDTO.TimeFlags,
+		//		stopwatchDTO.IsWorking ?? ,
+		//		ownerId
+		//	);
+		//}
+	}
 }

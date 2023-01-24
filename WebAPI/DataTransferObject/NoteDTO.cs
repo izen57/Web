@@ -8,7 +8,7 @@ namespace WebAPI.DataTransferObject
 		public DateTime CreationTime { get; set; }
 		public string Body { get; set; }
 		public bool IsTemporal { get; set; }
-		 
+
 		public NoteDTO() { }
 
 		public NoteDTO(Guid id, string body, bool isTemporal)
@@ -42,13 +42,14 @@ namespace WebAPI.DataTransferObject
 			);
 		}
 
-		public static Note FromDTO(NoteDTO noteDTO)
+		public static Note FromDTO(NoteDTO noteDTO, Guid ownerId)
 		{
 			return new Note(
 				noteDTO.Id,
 				noteDTO.CreationTime,
 				noteDTO.Body,
-				noteDTO.IsTemporal
+				noteDTO.IsTemporal,
+				ownerId
 			);
 		}
 	}

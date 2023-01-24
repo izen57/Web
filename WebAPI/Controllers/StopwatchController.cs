@@ -72,7 +72,7 @@ namespace WebAPI.Controllers
 			{
 				return StatusCode(403);
 			}
-			return new OkObjectResult(_stopwatchService.Get());
+			return new OkObjectResult(StopwatchDTO.ToDTO(_stopwatchService.Get()));
 		}
 	}
 }

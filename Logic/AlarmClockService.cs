@@ -1,7 +1,8 @@
-﻿using Repositories;
-using Model;
+﻿using Model;
+
+using Repositories;
+
 using Serilog;
-using System.Globalization;
 
 namespace Logic
 {
@@ -39,7 +40,7 @@ namespace Logic
 			return _repository.GetAllAlarmClocks();
 		}
 
-		public List<AlarmClock> GetAlarmClocks(QueryStringParameters param)
+		public List<AlarmClock> GetAlarmClocksByQuery(QueryStringParameters param)
 		{
 			return _repository.GetAlarmClocksByQuery(param);
 		}

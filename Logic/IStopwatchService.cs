@@ -1,5 +1,6 @@
-﻿using System.Drawing;
-using Model;
+﻿using Model;
+
+using System.Drawing;
 
 namespace Logic
 {

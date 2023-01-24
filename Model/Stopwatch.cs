@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 
-namespace Model {
-	public class Stopwatch {
+namespace Model
+{
+	public class Stopwatch
+	{
 		[Required]
 		public string Name { get; set; }
 		[Required]
@@ -12,18 +14,22 @@ namespace Model {
 		[Required]
 		public SortedSet<DateTime> TimeFlags { get; set; }
 		[Required]
+		public Guid OwnerId { get; private set; }
+		[Required]
 		public bool IsWorking { get; set; }
 		
 		public Stopwatch()
 		{
 		}
 
-		public Stopwatch(string name, Color stopwatchColor, System.Diagnostics.Stopwatch timing, SortedSet<DateTime> timeFlags, bool isWorking) {
+		public Stopwatch(string name, Color stopwatchColor, System.Diagnostics.Stopwatch timing, SortedSet<DateTime> timeFlags, bool isWorking, Guid ownerId)
+		{
 			Name = name;
 			StopwatchColor = stopwatchColor;
 			Timing = timing;
 			TimeFlags = timeFlags;
 			IsWorking = isWorking;
+			OwnerId = ownerId;
 		}
 	}
 }

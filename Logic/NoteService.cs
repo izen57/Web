@@ -1,9 +1,13 @@
-﻿using Repositories;
-using Model;
+﻿using Model;
+
+using Repositories;
+
 using Serilog;
+
 using System.Timers;
 
-namespace Logic {
+namespace Logic
+{
 	public class NoteService: INoteService {
 		INoteRepo _repository;
 		System.Timers.Timer _checkForTime;
@@ -32,7 +36,7 @@ namespace Logic {
 			_repository.Delete(id);
 		}
 
-		public List<Note> GetAllNotesList() {
+		public List<Note> GetAllNotes() {
 			return _repository.GetAllNotes();
 		}
 
@@ -43,7 +47,7 @@ namespace Logic {
 
 		private void AutoDelete(object sender, ElapsedEventArgs e)
 		{
-			foreach (Note note in GetAllNotesList())
+			foreach (Note note in GetAllNotes())
 				if (note.IsTemporal == true && DateTime.Now - note.CreationTime >= TimeSpan.FromDays(1))
 				{
 					Log.Logger.Information($"Заметка удалена автоматически по истечении срока. Идентификатор заметки: {note.Id}.");
