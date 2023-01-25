@@ -64,7 +64,7 @@ namespace RepositoriesImplementations
 
 			string alarmClockLog = "A\n";
 			foreach (AlarmClock alarmClock in user.UserAlarmClocks)
-				alarmClockLog += $"{alarmClock.AlarmTime:dd.MM.yyyy HH-mm-ss}\n";
+				alarmClockLog += alarmClock.Id + "\n";
 			alarmClockLog += "A";
 
 			string noteLog = "N\n";
@@ -82,7 +82,8 @@ namespace RepositoriesImplementations
 				$"{user.Id}," +
 				$"{user.Name}," +
 				$"{user.Password}" +
-				alarmClockLog + noteLog
+				alarmClockLog +
+				noteLog
 			);
 
 			return user;
@@ -109,7 +110,7 @@ namespace RepositoriesImplementations
 			}
 
 			isoStream.Close();
-			Log.Logger.Information($"UserDelete: Файл пользователя {guid} и все его данные удалены.");
+			Log.Logger.Information($"UserDelete: Файл пользователя {guid} удалён.");
 		}
 
 		public User Edit(User user)
@@ -136,7 +137,7 @@ namespace RepositoriesImplementations
 
 			string alarmClockLog = "A\n";
 			foreach (AlarmClock alarmClock in user.UserAlarmClocks)
-				alarmClockLog += $"{alarmClock.AlarmTime:dd.MM.yyyy HH-mm-ss}\n";
+				alarmClockLog += alarmClock.Id + "\n";
 			alarmClockLog += "A";
 
 			string noteLog = "N\n";
@@ -154,7 +155,8 @@ namespace RepositoriesImplementations
 				$"{user.Id}," +
 				$"{user.Name}," +
 				$"{user.Password}" +
-				alarmClockLog + noteLog
+				alarmClockLog +
+				noteLog
 			);
 
 			return user;
@@ -203,7 +205,7 @@ namespace RepositoriesImplementations
 			);
 		}
 
-		public List<User> GetAllUsers()
+		public List<User> GetUsers()
 		{
 			IEnumerable<string> filelist;
 			try
@@ -231,7 +233,7 @@ namespace RepositoriesImplementations
 
 		public List<User> GetUsersByQuery(QueryStringParameters param)
 		{
-			return GetAllUsers()
+			return GetUsers()
 				.Skip((param.PageNumber - 1) * param.PageSize)
 				.Take(param.PageSize)
 				.ToList();
@@ -296,41 +298,43 @@ namespace RepositoriesImplementations
 			return noteList;
 		}
 
-		public AlarmClock? GetUserAlarmClock(Guid ownerId, DateTime alarmTime)
+		public AlarmClock? GetUserAlarmClock(Guid ownerId, Guid guid)
 		{
 			FileStream isoStream;
 
 			try
 			{
 				isoStream = new(
-					$"IsolatedStorage/alarmclocks/{alarmTime:dd.MM.yyyy HH-mm-ss}.txt",
+					$"IsolatedStorage/alarmclocks/{guid}.txt",
 					FileMode.Open,
 					FileAccess.Write
 				);
 			}
 			catch (Exception ex)
 			{
-				Log.Logger.Error($"AlarmClockGet: Ошибка открытие файла alarmclocks/{alarmTime:dd.MM.yyyy HH-mm-ss}.txt.");
+				Log.Logger.Error($"AlarmClockGet: Ошибка открытия файла alarmclocks/{guid}.txt.");
 				throw new AlarmClockGetException(
-					$"Будильник пользователя на время {alarmTime:dd.MM.yyyy HH-mm-ss} не найден",
+					$"Будильник {guid} пользователя {ownerId} не найден",
 					ex
 				);
 			}
 
 			using var readerStream = new StreamReader(isoStream);
 			string? alarmClockName = readerStream.ReadLine();
+			string? alarmClockTime = readerStream.ReadLine();
 			string? alarmClockOwnerId = readerStream.ReadLine();
 			string? alarmClockColor = readerStream.ReadLine();
 			string? alarmClockWork = readerStream.ReadLine();
-			if (alarmClockName == null || alarmClockColor == null || alarmClockWork == null || alarmClockOwnerId == null)
+			if (alarmClockName == null || alarmClockTime == null || alarmClockColor == null || alarmClockWork == null || alarmClockOwnerId == null)
 			{
-				Log.Logger.Error($"AlarmClockGet: Ошибка разметки файла будильника. Время будильника: {alarmTime}.");
+				Log.Logger.Error($"AlarmClockGet: Ошибка разметки файла будильника {guid} пользователя {ownerId}.");
 				throw new ArgumentNullException();
 			}
 
 			if (Guid.Parse(alarmClockOwnerId) == ownerId)
 				return new AlarmClock(
-					alarmTime,
+					guid,
+					DateTime.Parse(alarmClockTime),
 					alarmClockName,
 					Guid.Parse(alarmClockOwnerId),
 					Color.FromName(alarmClockColor),
@@ -347,15 +351,11 @@ namespace RepositoriesImplementations
 			streamReader.ReadLine();
 			while (streamReader.ReadLine() != "A")
 			{
-				string? alarmClockTime = streamReader.ReadLine();
-				if (alarmClockTime != null)
+				string? alarmClockId = streamReader.ReadLine();
+				if (alarmClockId != null)
 					alarmClockList.Add(GetUserAlarmClock(
 						ownerId,
-						DateTime.ParseExact(
-							alarmClockTime.Replace("-", ":"),
-							"dd.MM.yyyy HH:mm:ss",
-							CultureInfo.InvariantCulture
-						)
+						Guid.Parse(alarmClockId)!
 					)!);
 			}
 

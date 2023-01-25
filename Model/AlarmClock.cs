@@ -1,27 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Drawing;
+﻿using System.Drawing;
 
 namespace Model
 {
 	public class AlarmClock
 	{
-		[Required]
+		public Guid Id { get; set; }
 		public DateTime AlarmTime { get; set; }
-		[Required]
 		public string Name { get; set; }
-		[Required]
 		public Guid OwnerId { get; set; }
-		[Required]
 		public Color AlarmClockColor { get; set; }
-		[Required]
 		public bool IsWorking { get; set; }
 
-		public AlarmClock()
-		{
-		}
+		public AlarmClock() { }
 
-		public AlarmClock(DateTime alarmTime, string name, Guid ownerId, Color alarmClockColor, bool isWorking)
+		public AlarmClock(Guid id, DateTime alarmTime, string name, Guid ownerId, Color alarmClockColor, bool isWorking)
 		{
+			Id = id;
 			AlarmTime = alarmTime;
 			Name = name;
 			AlarmClockColor = alarmClockColor;

@@ -4,11 +4,11 @@ namespace Logic
 {
 	public interface IAlarmClockService
 	{
-		AlarmClock Create(AlarmClock alarmCloc);
-		AlarmClock Edit(AlarmClock alarmCloc, DateTime oldTime);
-		void Delete(DateTime alarmTime);
-		AlarmClock? GetAlarmClock(DateTime dateTime);
-		List<AlarmClock> GetAllAlarmClocks();
+		AlarmClock Create(AlarmClock alarmClock);
+		AlarmClock Edit(AlarmClock alarmClock);
+		void Delete(Guid guid);
+		AlarmClock? GetAlarmClock(Guid guid);
+		List<AlarmClock> GetAlarmClocks();
 		List<AlarmClock> GetAlarmClocksByQuery(QueryStringParameters param);
 		void InvertWork(AlarmClock alarmClock);
 	}

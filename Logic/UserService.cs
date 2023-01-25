@@ -36,7 +36,7 @@ namespace Logic
 
 		public List<User> GetAllUsers()
 		{
-			return _repository.GetAllUsers();
+			return _repository.GetUsers();
 		}
 
 		public User? GetUser(Guid guid)
