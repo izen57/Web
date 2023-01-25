@@ -43,7 +43,7 @@ namespace Logic
 			_stopwatch.TimeFlags.Clear();
 			_stopwatch.IsWorking = false;
 
-			Log.Logger.Information("Секундомер  и его флаги сброшены.");
+			Log.Logger.Information("Секундомер и его флаги сброшены.");
 		}
 
 		public long AddStopwatchFlag()

@@ -34,7 +34,7 @@ namespace Logic
 			_repository.Delete(id);
 		}
 
-		public List<User> GetAllUsers()
+		public List<User> GetUsers()
 		{
 			return _repository.GetUsers();
 		}
