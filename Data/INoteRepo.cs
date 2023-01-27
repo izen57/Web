@@ -6,9 +6,9 @@ namespace Repositories
 	{
 		Note Create(Note note);
 		Note Edit(Note note);
-		void Delete(Guid id);
-		Note? GetNote(Guid id);
-		List<Note> GetAllNotes();
-		List<Note> GetNotesByQuery(QueryStringParameters param);
+		void Delete(Guid guid);
+		Note? GetNote(Guid guid, Guid ownerId);
+		List<Note> GetNotes(Guid ownerId);
+		List<Note> GetNotesByQuery(QueryStringParameters param, Guid ownerId);
 	}
 }

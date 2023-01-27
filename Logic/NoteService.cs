@@ -43,7 +43,7 @@ namespace Logic
 
 		public List<Note> GetNotes()
 		{
-			return _repository.GetAllNotes();
+			return _repository.GetNotes();
 		}
 
 		public Note? GetNote(Guid guid)

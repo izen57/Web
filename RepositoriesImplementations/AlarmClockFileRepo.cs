@@ -7,7 +7,6 @@ using Repositories;
 using Serilog;
 
 using System.Drawing;
-using System.Globalization;
 
 namespace RepositoriesImplementations
 {
@@ -183,6 +182,52 @@ namespace RepositoriesImplementations
 			);
 		}
 
+		public AlarmClock? GetAlarmClock(Guid guid, Guid ownerId)
+		{
+			FileStream isoStream;
+
+			try
+			{
+				isoStream = new(
+					$"IsolatedStorage/alarmclocks/{guid}.txt",
+					FileMode.Open,
+					FileAccess.Write
+				);
+			}
+			catch (Exception ex)
+			{
+				Log.Logger.Error($"AlarmClockGet: Ошибка открытия файла alarmclocks/{guid}.txt.");
+				throw new AlarmClockGetException(
+					$"Будильник {guid} пользователя {ownerId} не найден",
+					ex
+				);
+			}
+
+			using var readerStream = new StreamReader(isoStream);
+			string? alarmClockName = readerStream.ReadLine();
+			string? alarmClockTime = readerStream.ReadLine();
+			string? alarmClockOwnerId = readerStream.ReadLine();
+			string? alarmClockColor = readerStream.ReadLine();
+			string? alarmClockWork = readerStream.ReadLine();
+			if (alarmClockName == null || alarmClockTime == null || alarmClockColor == null || alarmClockWork == null || alarmClockOwnerId == null)
+			{
+				Log.Logger.Error($"AlarmClockGet: Ошибка разметки файла будильника {guid} пользователя {ownerId}.");
+				throw new ArgumentNullException();
+			}
+
+			if (Guid.Parse(alarmClockOwnerId) == ownerId)
+				return new AlarmClock(
+					guid,
+					DateTime.Parse(alarmClockTime),
+					alarmClockName,
+					Guid.Parse(alarmClockOwnerId),
+					Color.FromName(alarmClockColor),
+					bool.Parse(alarmClockWork)
+				);
+			else
+				return null;
+		}
+
 		public List<AlarmClock> GetAlarmClocks()
 		{
 			IEnumerable<string> filelist;
@@ -210,9 +255,34 @@ namespace RepositoriesImplementations
 			return alarmClockList;
 		}
 
-		public List<AlarmClock> GetAlarmClocksByQuery(QueryStringParameters param)
+		public List<AlarmClock> GetAlarmClocks(Guid ownerId)
 		{
-			return GetAlarmClocks()
+			List<AlarmClock> alarmClockList = new();
+			FileStream fileStream = new(
+				$"IsolatedStorage/users/{ownerId}.txt",
+				FileMode.Open,
+				FileAccess.Write
+			);
+			StreamReader streamReader = new(fileStream);
+
+			while (streamReader.ReadLine() != "A")
+				;
+			while (streamReader.ReadLine() != "A")
+			{
+				string? alarmClockId = streamReader.ReadLine();
+				if (alarmClockId != null)
+					alarmClockList.Add(GetAlarmClock(
+						ownerId,
+						Guid.Parse(alarmClockId)!
+					)!);
+			}
+
+			return alarmClockList;
+		}
+
+		public List<AlarmClock> GetAlarmClocksByQuery(QueryStringParameters param, Guid ownerId)
+		{
+			return GetAlarmClocks(ownerId)
 				.Skip((param.PageNumber - 1) * param.PageSize)
 				.Take(param.PageSize)
 				.ToList();

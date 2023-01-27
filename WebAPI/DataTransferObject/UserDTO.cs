@@ -7,21 +7,19 @@ namespace WebAPI.DataTransferObject
 		public Guid Id { get; private set; }
 		public string Name { get; set; }
 		public string Password { get; set; }
-		public string Token { get; set; }
 		public List<AlarmClockDTO> UserAlarmClocks { get; private set; }
 		public List<NoteDTO> UserNotes { get; private set; }
 
-		public UserDTO(Guid id, string name, string password, string token, List<AlarmClockDTO> userAlarmClocks, List<NoteDTO> userNotes)
+		public UserDTO(Guid id, string name, string password, List<AlarmClockDTO> userAlarmClocks, List<NoteDTO> userNotes)
 		{
 			Id = id;
 			Name = name;
 			Password = password;
-			Token = token;
 			UserAlarmClocks = userAlarmClocks;
 			UserNotes = userNotes;
 		}
 
-		public static UserDTO ToDTO(User user, string token)
+		public static UserDTO ToDTO(User user)
 		{
 			List<AlarmClockDTO> alarmClockDTOs = new();
 			foreach (AlarmClock alarmClock in user.UserAlarmClocks)
@@ -35,7 +33,6 @@ namespace WebAPI.DataTransferObject
 				user.Id,
 				user.Name,
 				user.Password,
-				token,
 				alarmClockDTOs,
 				noteDTOs
 			);

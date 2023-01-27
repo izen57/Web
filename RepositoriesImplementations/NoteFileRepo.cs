@@ -110,47 +110,47 @@ namespace RepositoriesImplementations
 			return note;
 		}
 
-		public void Delete(Guid Id)
+		public void Delete(Guid guid)
 		{
 			FileStream isoStream;
 			try
 			{
 				isoStream = new(
-					"IsolatedStorage/notes/{Id}.txt",
+					$"IsolatedStorage/notes/{guid}.txt",
 					FileMode.Open,
 					FileAccess.Write
 				);
 			}
 			catch (Exception ex)
 			{
-				Log.Logger.Error($"NoteDelete: Файл notes/{Id}.txt не найден.");
+				Log.Logger.Error($"NoteDelete: Файл notes/{guid}.txt не найден.");
 				throw new NoteDeleteException(
-					$"Заметка с идентификатором {Id} не найдена.",
+					$"Заметка с идентификатором {guid} не найдена.",
 					ex
 				);
 			}
 
 			isoStream.Close();
-			File.Delete($"IsolatedStorage/notes/{Id}.txt");
+			File.Delete($"IsolatedStorage/notes/{guid}.txt");
 
-			Log.Logger.Information($"NoteDelete: Файл заметки удалён. Идентификатор заметки: {Id}.");
+			Log.Logger.Information($"NoteDelete: Файл заметки удалён. Идентификатор заметки: {guid}.");
 		}
 
-		public Note? GetNote(Guid Id)
+		public Note? GetNote(Guid guid)
 		{
 			FileStream isoStream;
 
 			try
 			{
 				isoStream = new(
-					$"IsolatedStorage/notes/{Id}.txt",
+					$"IsolatedStorage/notes/{guid}.txt",
 					FileMode.Open,
 					FileAccess.Write
 				);
 			}
 			catch (Exception ex)
 			{
-				Log.Logger.Error($"NoteGet: Ошибка открытия заметки {Id}.");
+				Log.Logger.Error($"NoteGet: Ошибка открытия заметки {guid}.");
 				return null;
 				//throw new NoteGetException(
 				//	$"Заметка в защищённом хранилище пользователя {_ownerId} не найдена.",
@@ -165,12 +165,12 @@ namespace RepositoriesImplementations
 			string? noteIsTemporal = readerStream.ReadLine();
 			if (noteCreationTime == null || noteBody == null || noteIsTemporal == null || noteOwnerId == null)
 			{
-				Log.Logger.Error($"NoteGet: Ошибка разметки файла. Идентификатор заметки: {Id}.");
+				Log.Logger.Error($"NoteGet: Ошибка разметки файла. Идентификатор заметки: {guid}.");
 				throw new ArgumentNullException();
 			}
 
 			return new Note(
-				Id,
+				guid,
 				DateTime.Parse(noteCreationTime),
 				noteBody,
 				bool.Parse(noteIsTemporal),
@@ -178,7 +178,73 @@ namespace RepositoriesImplementations
 			);
 		}
 
-		public List<Note> GetAllNotes()
+		public Note? GetNote(Guid guid, Guid ownerId)
+		{
+			FileStream isoStream;
+
+			try
+			{
+				isoStream = new(
+					$"IsolatedStorage/notes/{guid}.txt",
+					FileMode.Open,
+					FileAccess.Write
+				);
+			}
+			catch (Exception ex)
+			{
+				Log.Logger.Error($"NoteGet: Ошибка открытия заметки {guid}.");
+				throw new NoteGetException(
+					$"Ошибка получения доступа к заметке. Идентификатор заметки: {guid}. Идентификатор пользователя: {ownerId}.",
+					ex
+				);
+			}
+
+			using var readerStream = new StreamReader(isoStream);
+			string? noteCreationTime = readerStream.ReadLine();
+			string? noteBody = readerStream.ReadLine();
+			string? noteOwnerId = readerStream.ReadLine();
+			string? noteIsTemporal = readerStream.ReadLine();
+			if (noteCreationTime == null || noteBody == null || noteIsTemporal == null || noteOwnerId == null)
+			{
+				Log.Logger.Error($"NoteGet: Ошибка разметки файла. Идентификатор заметки: {guid}. Идентификатор пользователя: {ownerId}.");
+				throw new ArgumentNullException();
+			}
+
+			return new Note(
+				guid,
+				DateTime.Parse(noteCreationTime),
+				noteBody,
+				bool.Parse(noteIsTemporal),
+				Guid.Parse(noteOwnerId)
+			);
+		}
+
+		public List<Note> GetNotes(Guid ownerId)
+		{
+			List<Note> noteList = new();
+			FileStream fileStream = new(
+				$"IsolatedStorage/users/{ownerId}.txt",
+				FileMode.Open,
+				FileAccess.Write
+			);
+			StreamReader streamReader = new(fileStream);
+
+			while (streamReader.ReadLine() != "N")
+				;
+			while (streamReader.ReadLine() != "N")
+			{
+				string? noteId = streamReader.ReadLine();
+				if (noteId != null)
+					noteList.Add(GetNote(
+						ownerId,
+						Guid.Parse(noteId)
+					)!);
+			}
+
+			return noteList;
+		}
+
+		public List<Note> GetNotes()
 		{
 			IEnumerable<string> filelist;
 			List<Note> noteList = new();
@@ -201,10 +267,10 @@ namespace RepositoriesImplementations
 			return noteList;
 		}
 
-		public List<Note> GetNotesByQuery(QueryStringParameters param)
+		public List<Note> GetNotesByQuery(QueryStringParameters param, Guid ownerId)
 		{
-			return GetAllNotes()
-				.Skip((param.PageNumber-1) * param.PageSize)
+			return GetNotes(ownerId)
+				.Skip((param.PageNumber - 1) * param.PageSize)
 				.Take(param.PageSize)
 				.ToList();
 		}

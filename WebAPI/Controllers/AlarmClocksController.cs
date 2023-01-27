@@ -11,11 +11,10 @@ using WebAPI.DataTransferObject;
 namespace WebAPI.Controllers
 {
 	[ApiController]
-	[Produces("application/json")]
 	[Route("api/v1/alarmclocks")]
 	public class AlarmClocksController: ControllerBase
 	{
-		private readonly IAlarmClockService _alarmClockService;
+		readonly IAlarmClockService _alarmClockService;
 
 		public AlarmClocksController(IAlarmClockService alarmClockService)
 		{
@@ -47,21 +46,20 @@ namespace WebAPI.Controllers
 		/// <summary>
 		/// Создаёт новый будильник
 		/// </summary>
-		/// <param name="alarmClockDTO">Создаваемый будильник</param>
+		/// <param name="alarmClockDTOCreate">Создаваемый будильник</param>
 		/// <respons code="201">Будильник успешно создан</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
-		/// <respons code="403">У Вас нет прав доступа</respons>
-		/// <respons code="500">Будильник на такие дату и время уже существует</respons>
+		/// <respons code="403">Недостаточно прав</respons>
 		[HttpPost("")]
 		[ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AlarmClockDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
-		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-		public ActionResult CreateAlarmClock([FromBody] AlarmClockDTO alarmClockDTO)
+		public ActionResult CreateAlarmClock([FromBody] AlarmClockDTOCreate alarmClockDTOCreate)
 		{
 			try
 			{
-				AlarmClock alarmClock = AlarmClockDTO.FromDTO(alarmClockDTO);
+				Guid alarmClockId = Guid.NewGuid();
+				AlarmClock alarmClock = AlarmClockDTO.FromDTO(alarmClockDTOCreate, Guid.NewGuid());
 				alarmClockDTO = AlarmClockDTO.ToDTO(_alarmClockService.Create(alarmClock));
 			}
 			catch (AlarmClockCreateException e) when (e.InnerException.Message.Contains("Read-only file system"))
@@ -84,7 +82,7 @@ namespace WebAPI.Controllers
 		/// <respons code="400">Ошибка синтаксиса</respons>
 		/// <respons code="403">У Вас нет прав доступа</respons>
 		/// <respons code="404">Будильник не найден</respons>
-		[HttpPut("{alarmClockTime}")]
+		[HttpPatch("{alarmClockTime}")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AlarmClockDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -136,7 +134,6 @@ namespace WebAPI.Controllers
 		/// Удаляет будильник по времени и дате
 		/// </summary>
 		/// <param name="alarmClockTime">Время искомого будильника</param>
-		/// <returns>Изменённый будильник</returns>
 		/// <respons code="200">Будильник успешно удалён</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
 		/// <respons code="403">У Вас нет прав доступа</respons>

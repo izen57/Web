@@ -29,9 +29,9 @@ namespace Logic
 			return _repository.Edit(user);
 		}
 
-		public void Delete(Guid id)
+		public void Delete(Guid guid)
 		{
-			_repository.Delete(id);
+			_repository.Delete(guid);
 		}
 
 		public List<User> GetUsers()
@@ -44,7 +44,7 @@ namespace Logic
 			return _repository.GetUser(guid);
 		}
 
-		public List<User> GetUserByQuery(QueryStringParameters param)
+		public List<User> GetUsersByQuery(QueryStringParameters param)
 		{
 			return _repository.GetUsersByQuery(param);
 		}

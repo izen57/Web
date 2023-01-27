@@ -8,16 +8,18 @@ namespace WebAPI.DataTransferObject
 	{
 		public Guid Id { get; set; }
 		public DateTime AlarmTime { get; set; }
+		public Guid OwnerId { get; set; }
 		public string Name { get; set; }
 		public string AlarmClockColor { get; set; }
 		public bool IsWorking { get; set; }
 
 		public AlarmClockDTO() { }
 
-		public AlarmClockDTO(Guid id, DateTime alarmTime, string name, string alarmClockColor, bool isWorking)
+		public AlarmClockDTO(Guid id, DateTime alarmTime, Guid ownerId, string name, string alarmClockColor, bool isWorking)
 		{
 			Id = id;
 			AlarmTime = alarmTime;
+			OwnerId = ownerId;
 			Name = name;
 			AlarmClockColor = alarmClockColor;
 			IsWorking = isWorking;
@@ -28,6 +30,7 @@ namespace WebAPI.DataTransferObject
 			return new AlarmClockDTO(
 				alarmClock.Id,
 				alarmClock.AlarmTime,
+				alarmClock.OwnerId,
 				alarmClock.Name,
 				alarmClock.AlarmClockColor.Name,
 				alarmClock.IsWorking

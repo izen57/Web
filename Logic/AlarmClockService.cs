@@ -35,9 +35,19 @@ namespace Logic
 			return _repository.GetAlarmClock(guid);
 		}
 
+		public AlarmClock? GetAlarmClock(Guid guid, Guid ownerId)
+		{
+			return _repository.GetAlarmClock(guid, ownerId);
+		}
+
 		public List<AlarmClock> GetAlarmClocks()
 		{
 			return _repository.GetAlarmClocks();
+		}
+
+		public List<AlarmClock> GetAlarmClocks(Guid ownerId)
+		{
+			return _repository.GetAlarmClocks(ownerId);
 		}
 
 		public List<AlarmClock> GetAlarmClocksByQuery(QueryStringParameters param)

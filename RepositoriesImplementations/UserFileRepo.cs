@@ -8,8 +8,9 @@ using Repositories;
 
 using Serilog;
 
+using System;
 using System.Drawing;
-using System.Globalization;
+using System.IO;
 
 namespace RepositoriesImplementations
 {
@@ -91,26 +92,56 @@ namespace RepositoriesImplementations
 
 		public void Delete(Guid guid)
 		{
-			FileStream isoStream;
-			try
-			{
-				isoStream = new(
-					$"IsolatedStorage/users/{guid}.txt",
-					FileMode.Open,
-					FileAccess.Write
-				);
-			}
-			catch (Exception ex)
+			string fileToDelete = $"IsolatedStorage/users/{guid}.txt";
+			if (File.Exists(fileToDelete))
+				File.Delete(fileToDelete);
+			else
 			{
 				Log.Logger.Error($"UserDelete: Файл users/{guid}.txt не найден.");
-				throw new UserDeleteException(
-					$"Пользователь с идентификатором {guid} не найден.",
-					ex
-				);
+				throw new UserDeleteException($"Пользователь с идентификатором {guid} не найден.");
+			}
+			DeleteUserData(guid);
+			File.Delete(fileToDelete);
+
+			Log.Logger.Information($"UserDelete: Файл пользователя {guid} удалён.");
+		}
+
+		void DeleteUserData(Guid guid)
+		{
+			FileStream fileStream = new($"IsolatedStorage/users/{guid}.txt", FileMode.Open, FileAccess.Read);
+			StreamReader streamReader = new(fileStream);
+
+			while (streamReader.ReadLine() != "A")
+				;
+			while (streamReader.ReadLine() != "A")
+			{
+				string? alarmClockId = streamReader.ReadLine();
+				if (alarmClockId != null)
+				{
+					string fileToDelete = $"IsolatedStorage/alarmclocks/{alarmClockId}.txt";
+					if (File.Exists(fileToDelete))
+					{
+						File.Delete(fileToDelete);
+						Log.Logger.Information($"UserDeleteData: Будильник {alarmClockId} пользователя {guid} удалён.");
+					}
+				}
 			}
 
-			isoStream.Close();
-			Log.Logger.Information($"UserDelete: Файл пользователя {guid} удалён.");
+			while (streamReader.ReadLine() != "N")
+				;
+			while (streamReader.ReadLine() != "N")
+			{
+				string? noteId = streamReader.ReadLine();
+				if (noteId != null)
+				{
+					string fileToDelete = $"IsolatedStorage/notes/{noteId}.txt";
+					if (File.Exists(fileToDelete))
+					{
+						File.Delete(fileToDelete);
+						Log.Logger.Information($"UserDeleteData: Заметка {noteId} пользователя {guid} удалён.");
+					}
+				}
+			}
 		}
 
 		public User Edit(User user)
@@ -184,17 +215,21 @@ namespace RepositoriesImplementations
 				//);
 			}
 
-			using var readerStream = new StreamReader(isoStream);
-			string? userName = readerStream.ReadLine();
-			string? userPassword = readerStream.ReadLine();
-			if (userName == null || userPassword == null)
+			string? userName;
+			string? userPassword;
+			using (var readerStream = new StreamReader(isoStream))
 			{
-				Log.Logger.Error($"GetUser: Ошибка разметки файла. Идентификатор пользователя: {guid}.");
-				throw new ArgumentNullException();
+				userName = readerStream.ReadLine();
+				userPassword = readerStream.ReadLine();
+				if (userName == null || userPassword == null)
+				{
+					Log.Logger.Error($"GetUser: Ошибка разметки файла. Идентификатор пользователя: {guid}.");
+					throw new ArgumentNullException();
+				}
 			}
 
-			List<AlarmClock> userAlarmClocks = GetUserAlarmClocks(guid, readerStream);
-			List<Note> userNotes = GetUserNotes(guid, readerStream);
+			List<AlarmClock> userAlarmClocks = GetUserAlarmClocks(guid);
+			List<Note> userNotes = GetUserNotes(guid);
 
 			return new User(
 				guid,
@@ -210,7 +245,7 @@ namespace RepositoriesImplementations
 			IEnumerable<string> filelist;
 			try
 			{
-				filelist = Directory.EnumerateDirectories($"IsolatedStorage/users");
+				filelist = Directory.EnumerateDirectories("IsolatedStorage/users");
 			}
 			catch (Exception ex)
 			{
@@ -239,23 +274,23 @@ namespace RepositoriesImplementations
 				.ToList();
 		}
 
-		public Note? GetUserNote(Guid ownerId, Guid Id)
+		Note? GetUserNote(Guid guid, Guid ownerId)
 		{
 			FileStream isoStream;
 
 			try
 			{
 				isoStream = new(
-					$"IsolatedStorage/notes/{Id}.txt",
+					$"IsolatedStorage/notes/{guid}.txt",
 					FileMode.Open,
 					FileAccess.Write
 				);
 			}
 			catch (Exception ex)
 			{
-				Log.Logger.Error($"NoteGet: Ошибка открытия заметки {Id}.");
+				Log.Logger.Error($"NoteGet: Ошибка открытия заметки {guid}.");
 				throw new NoteGetException(
-					$"Ошибка получения доступа к заметке. Идентификатор заметки: {Id}. Идентификатор пользователя: {ownerId}.",
+					$"Ошибка получения доступа к заметке. Идентификатор заметки: {guid}. Идентификатор пользователя: {ownerId}.",
 					ex
 				);
 			}
@@ -267,12 +302,12 @@ namespace RepositoriesImplementations
 			string? noteIsTemporal = readerStream.ReadLine();
 			if (noteCreationTime == null || noteBody == null || noteIsTemporal == null || noteOwnerId == null)
 			{
-				Log.Logger.Error($"NoteGet: Ошибка разметки файла. Идентификатор заметки: {Id}. Идентификатор пользователя: {ownerId}.");
+				Log.Logger.Error($"NoteGet: Ошибка разметки файла. Идентификатор заметки: {guid}. Идентификатор пользователя: {ownerId}.");
 				throw new ArgumentNullException();
 			}
 
 			return new Note(
-				Id,
+				guid,
 				DateTime.Parse(noteCreationTime),
 				noteBody,
 				bool.Parse(noteIsTemporal),
@@ -280,11 +315,18 @@ namespace RepositoriesImplementations
 			);
 		}
 
-		public List<Note> GetUserNotes(Guid ownerId, StreamReader streamReader)
+		List<Note> GetUserNotes(Guid ownerId)
 		{
 			List<Note> noteList = new();
+			FileStream fileStream = new(
+				$"IsolatedStorage/users/{ownerId}.txt",
+				FileMode.Open,
+				FileAccess.Write
+			);
+			StreamReader streamReader = new(fileStream);
 
-			streamReader.ReadLine();
+			while (streamReader.ReadLine() != "N")
+				;
 			while (streamReader.ReadLine() != "N")
 			{
 				string? noteId = streamReader.ReadLine();
@@ -298,7 +340,7 @@ namespace RepositoriesImplementations
 			return noteList;
 		}
 
-		public AlarmClock? GetUserAlarmClock(Guid ownerId, Guid guid)
+		AlarmClock? GetUserAlarmClock(Guid guid, Guid ownerId)
 		{
 			FileStream isoStream;
 
@@ -344,11 +386,18 @@ namespace RepositoriesImplementations
 				return null;
 		}
 
-		public List<AlarmClock> GetUserAlarmClocks(Guid ownerId, StreamReader streamReader)
+		List<AlarmClock> GetUserAlarmClocks(Guid ownerId)
 		{
 			List<AlarmClock> alarmClockList = new();
+			FileStream fileStream = new(
+				$"IsolatedStorage/users/{ownerId}.txt",
+				FileMode.Open,
+				FileAccess.Write
+			);
+			StreamReader streamReader = new(fileStream);
 
-			streamReader.ReadLine();
+			while (streamReader.ReadLine() != "A")
+				;
 			while (streamReader.ReadLine() != "A")
 			{
 				string? alarmClockId = streamReader.ReadLine();

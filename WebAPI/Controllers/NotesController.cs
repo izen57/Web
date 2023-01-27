@@ -9,8 +9,7 @@ using WebAPI.DataTransferObject;
 
 namespace WebAPI.Controllers
 {
-    [ApiController]
-	[Produces("application/json")]
+	[ApiController]
 	[Route("api/v1/notes")]
 	public class NotesController: ControllerBase
 	{
@@ -65,11 +64,11 @@ namespace WebAPI.Controllers
 			{
 				note = _noteService.GetNote(Id);
 			}
-			catch (UserEditException e) when (e.InnerException.Message.Contains("Read-only file system"))
+			catch (NoteEditException e) when (e.InnerException.Message.Contains("Read-only file system"))
 			{
 				return StatusCode(403);
 			}
-			catch (UserEditException)
+			catch (NoteEditException)
 			{
 				return new NotFoundResult();
 			}
@@ -89,6 +88,7 @@ namespace WebAPI.Controllers
 		/// Создаёт новую заметку
 		/// </summary>
 		/// <param name="noteDTOCreate">Новая заметка</param>
+		/// <returns>Созданная заметка</returns>
 		/// <respons code="201">Заметка успешно создана</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
 		/// <respons code="403">У Вас нет прав доступа</respons>
@@ -110,11 +110,11 @@ namespace WebAPI.Controllers
 				);
 				noteDTO = NoteDTO.ToDTO(_noteService.Create(note));
 			}
-			catch (UserCreateException e) when (e.InnerException.Message.Contains("Read-only file system"))
+			catch (NoteCreateException e) when (e.InnerException.Message.Contains("Read-only file system"))
 			{
 				return StatusCode(403);
 			}
-			catch (UserCreateException e) when (e.InnerException.Message.Contains("already exists"))
+			catch (NoteCreateException e) when (e.InnerException.Message.Contains("already exists"))
 			{
 				return StatusCode(409);
 			}
@@ -125,6 +125,7 @@ namespace WebAPI.Controllers
 		/// Возвращает заметку по её идентификатору
 		/// </summary>
 		/// <param name="Id">Идентификатор искомой заметки</param>
+		/// <returns>Искомая заметка</returns>
 		/// <respons code="200">Заметка найдена</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
 		/// <respons code="404">Заметка не найдена</respons>
@@ -139,7 +140,7 @@ namespace WebAPI.Controllers
 			{
 				note = NoteDTO.ToDTO(_noteService.GetNote(Id));
 			}
-			catch (UserGetException)
+			catch (NoteGetException)
 			{
 				return new NotFoundResult();
 			}
