@@ -44,9 +44,9 @@ namespace Logic
 			return _repository.GetUser(guid);
 		}
 
-		public List<User> GetUsersByQuery(QueryStringParameters param)
+		public List<User> GetUsers(QueryStringParameters param)
 		{
-			return _repository.GetUsersByQuery(param);
+			return _repository.GetUsers(param);
 		}
 	}
 }

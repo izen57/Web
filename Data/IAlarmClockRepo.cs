@@ -6,9 +6,9 @@ namespace Repositories
 	{
 		AlarmClock Create(AlarmClock alarmClock);
 		AlarmClock Edit(AlarmClock alarmClock);
-		void Delete(Guid guid);
-		AlarmClock? GetAlarmClock(Guid guid, Guid ownerId);
+		void Delete(Guid guid, Guid ownerId);
+		AlarmClock? GetAlarmClock(Guid guid);
 		List<AlarmClock> GetAlarmClocks(Guid ownerId);
-		List<AlarmClock> GetAlarmClocksByQuery(QueryStringParameters param, Guid ownerId);
+		List<AlarmClock> GetAlarmClocks(Guid ownerId, QueryStringParameters param);
 	}
 }

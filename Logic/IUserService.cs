@@ -9,6 +9,6 @@ namespace Logic
 		void Delete(Guid guid);
 		List<User> GetUsers();
 		User? GetUser(Guid guid);
-		List<User> GetUsersByQuery(QueryStringParameters param);
+		List<User> GetUsers(QueryStringParameters param);
 	}
 }

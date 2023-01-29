@@ -55,11 +55,33 @@ namespace RepositoriesImplementations
 				);
 			}
 
-			using StreamWriter TextNote = new(isoStream);
-			TextNote.WriteLine(note.CreationTime);
-			TextNote.WriteLine(note.OwnerId);
-			TextNote.WriteLine(note.Body);
-			TextNote.WriteLine(note.IsTemporal);
+			using (StreamWriter TextNote = new(isoStream))
+			{
+				TextNote.WriteLine(note.CreationTime);
+				TextNote.WriteLine(note.OwnerId);
+				TextNote.WriteLine(note.Body);
+				TextNote.WriteLine(note.IsTemporal);
+			}
+
+			string userFilePath = $"IsolatedStorage/user/{note.OwnerId}.txt";
+
+			try
+			{
+				isoStream = File.OpenWrite(userFilePath);
+			}
+			catch (Exception ex)
+			{
+				Log.Logger.Error($"AlarmClockCreate: Файл user/{note.OwnerId}.txt нельзя открыть.");
+				throw new NoteCreateException(
+					$"Не удалось создать будильник {note.Id} для пользователя {note.OwnerId}.",
+					ex
+				);
+			}
+
+			List<string> previousUserLines = File.ReadAllLines(userFilePath).ToList();
+			previousUserLines.Insert(previousUserLines.IndexOf("N"), note.Id.ToString()!);
+			File.WriteAllLines(userFilePath, previousUserLines);
+
 			Log.Logger.Information(
 				"NoteCreate: Создан файл заметки со следующей информацией:\n" +
 				$"{note.Id}," +
@@ -110,29 +132,35 @@ namespace RepositoriesImplementations
 			return note;
 		}
 
-		public void Delete(Guid guid)
+		public void Delete(Guid guid, Guid ownerId)
 		{
-			FileStream isoStream;
-			try
-			{
-				isoStream = new(
-					$"IsolatedStorage/notes/{guid}.txt",
-					FileMode.Open,
-					FileAccess.Write
-				);
-			}
-			catch (Exception ex)
+			string noteFilePath = $"IsolatedStorage/notes/{guid}.txt";
+			if (File.Exists(noteFilePath))
 			{
 				Log.Logger.Error($"NoteDelete: Файл notes/{guid}.txt не найден.");
 				throw new NoteDeleteException(
 					$"Заметка с идентификатором {guid} не найдена.",
+					new FileNotFoundException(noteFilePath)
+				);
+			}
+
+			string userFilePath = $"IsolatedStorage/user/{ownerId}.txt";
+			try
+			{
+				List<string> previousUserLines = File.ReadAllLines(userFilePath).ToList();
+				previousUserLines.Remove(guid.ToString());
+				File.WriteAllLines(userFilePath, previousUserLines);
+			}
+			catch (Exception ex)
+			{
+				Log.Logger.Error($"NoteDelete: Файл user/{ownerId}.txt не найден.");
+				throw new NoteDeleteException(
+					$"Пользователь {ownerId} не найден.",
 					ex
 				);
 			}
 
-			isoStream.Close();
-			File.Delete($"IsolatedStorage/notes/{guid}.txt");
-
+			File.Delete(noteFilePath);
 			Log.Logger.Information($"NoteDelete: Файл заметки удалён. Идентификатор заметки: {guid}.");
 		}
 
@@ -178,72 +206,6 @@ namespace RepositoriesImplementations
 			);
 		}
 
-		public Note? GetNote(Guid guid, Guid ownerId)
-		{
-			FileStream isoStream;
-
-			try
-			{
-				isoStream = new(
-					$"IsolatedStorage/notes/{guid}.txt",
-					FileMode.Open,
-					FileAccess.Write
-				);
-			}
-			catch (Exception ex)
-			{
-				Log.Logger.Error($"NoteGet: Ошибка открытия заметки {guid}.");
-				throw new NoteGetException(
-					$"Ошибка получения доступа к заметке. Идентификатор заметки: {guid}. Идентификатор пользователя: {ownerId}.",
-					ex
-				);
-			}
-
-			using var readerStream = new StreamReader(isoStream);
-			string? noteCreationTime = readerStream.ReadLine();
-			string? noteBody = readerStream.ReadLine();
-			string? noteOwnerId = readerStream.ReadLine();
-			string? noteIsTemporal = readerStream.ReadLine();
-			if (noteCreationTime == null || noteBody == null || noteIsTemporal == null || noteOwnerId == null)
-			{
-				Log.Logger.Error($"NoteGet: Ошибка разметки файла. Идентификатор заметки: {guid}. Идентификатор пользователя: {ownerId}.");
-				throw new ArgumentNullException();
-			}
-
-			return new Note(
-				guid,
-				DateTime.Parse(noteCreationTime),
-				noteBody,
-				bool.Parse(noteIsTemporal),
-				Guid.Parse(noteOwnerId)
-			);
-		}
-
-		public List<Note> GetNotes(Guid ownerId)
-		{
-			List<Note> noteList = new();
-			FileStream fileStream = new(
-				$"IsolatedStorage/users/{ownerId}.txt",
-				FileMode.Open,
-				FileAccess.Write
-			);
-			StreamReader streamReader = new(fileStream);
-
-			while (streamReader.ReadLine() != "N")
-				;
-			while (streamReader.ReadLine() != "N")
-			{
-				string? noteId = streamReader.ReadLine();
-				if (noteId != null)
-					noteList.Add(GetNote(
-						ownerId,
-						Guid.Parse(noteId)
-					)!);
-			}
-
-			return noteList;
-		}
-
 		public List<Note> GetNotes()
 		{
 			IEnumerable<string> filelist;
@@ -267,7 +229,29 @@ namespace RepositoriesImplementations
 			return noteList;
 		}
 
-		public List<Note> GetNotesByQuery(QueryStringParameters param, Guid ownerId)
+		public List<Note> GetNotes(Guid ownerId)
+		{
+			List<Note> noteList = new();
+			FileStream fileStream = new(
+				$"IsolatedStorage/users/{ownerId}.txt",
+				FileMode.Open,
+				FileAccess.Write
+			);
+			StreamReader streamReader = new(fileStream);
+
+			while (streamReader.ReadLine() != "N")
+				;
+			while (streamReader.ReadLine() != "N")
+			{
+				string? noteId = streamReader.ReadLine();
+				if (noteId != null)
+					noteList.Add(GetNote(Guid.Parse(noteId))!);
+			}
+
+			return noteList;
+		}
+
+		public List<Note> GetNotes(Guid ownerId, QueryStringParameters param)
 		{
 			return GetNotes(ownerId)
 				.Skip((param.PageNumber - 1) * param.PageSize)

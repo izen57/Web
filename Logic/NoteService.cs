@@ -36,14 +36,9 @@ namespace Logic
 			return _repository.Edit(note);
 		}
 
-		public void Delete(Guid id)
+		public void Delete(Guid guid, Guid ownerId)
 		{
-			_repository.Delete(id);
-		}
-
-		public List<Note> GetNotes()
-		{
-			return _repository.GetNotes();
+			_repository.Delete(guid, ownerId);
 		}
 
 		public Note? GetNote(Guid guid)
@@ -51,19 +46,24 @@ namespace Logic
 			return _repository.GetNote(guid);
 		}
 
+		public List<Note> GetNotes(Guid ownerId)
+		{
+			return _repository.GetNotes(ownerId);
+		}
+
 		private void AutoDelete(object sender, ElapsedEventArgs e)
 		{
-			foreach (Note note in GetNotes())
+			foreach (Note note in _repository.GetNotes())
 				if (note.IsTemporal == true && DateTime.Now - note.CreationTime >= TimeSpan.FromDays(1))
 				{
 					Log.Logger.Information($"Заметка удалена автоматически по истечении срока. Идентификатор заметки: {note.Id}.");
-					_repository.Delete(note.Id);
+					_repository.Delete(note.Id, note.OwnerId);
 				}
 		}
 
-		public List<Note> GetNotesByQuery(QueryStringParameters param)
+		public List<Note> GetNotes(Guid ownerId, QueryStringParameters param)
 		{
-			return _repository.GetNotesByQuery(param);
+			return _repository.GetNotes(ownerId, param);
 		}
 	}
 }

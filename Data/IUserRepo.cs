@@ -9,6 +9,6 @@ namespace Repositories
 		void Delete(Guid guid);
 		User? GetUser(Guid guid);
 		List<User> GetUsers();
-		List<User> GetUsersByQuery(QueryStringParameters param);
+		List<User> GetUsers(QueryStringParameters param);
 	}
 }

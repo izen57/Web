@@ -33,11 +33,11 @@ namespace RepositoriesImplementations
 
 		public AlarmClock Create(AlarmClock alarmClock)
 		{
-			string filepath = $"IsolatedStorage/alarmclocks/{alarmClock.Id}.txt";
+			string alarmClockFilePath = $"IsolatedStorage/alarmclocks/{alarmClock.Id}.txt";
 
-			if (File.Exists(filepath))
+			if (File.Exists(alarmClockFilePath))
 			{
-				Log.Logger.Error($"AlarmClockEdit: Файл alarmclocks/{alarmClock.Id}.txt уже существует.");
+				Log.Logger.Error($"AlarmClockCreate: Файл alarmclocks/{alarmClock.Id}.txt уже существует.");
 				throw new AlarmClockCreateException(
 					$"Не удалось создать будильник {alarmClock.Id} для пользователя {alarmClock.OwnerId}.",
 					new IOException("already exists")
@@ -47,23 +47,44 @@ namespace RepositoriesImplementations
 			FileStream isoStream;
 			try
 			{
-				isoStream = File.Create(filepath);
+				isoStream = File.Create(alarmClockFilePath);
 			}
 			catch (Exception ex)
 			{
-				Log.Logger.Error($"AlarmClockEdit: Файл alarmclocks/{alarmClock.Id}.txt нельзя открыть.");
+				Log.Logger.Error($"AlarmClockCreate: Файл alarmclocks/{alarmClock.Id}.txt нельзя открыть.");
 				throw new AlarmClockCreateException(
 					$"Не удалось создать будильник {alarmClock.Id} для пользователя {alarmClock.OwnerId}.",
 					ex
 				);
 			}
 
-			using StreamWriter writer = new(isoStream);
-			writer.WriteLine(alarmClock.Name);
-			writer.WriteLine(alarmClock.AlarmTime);
-			writer.WriteLine(alarmClock.OwnerId);
-			writer.WriteLine(alarmClock.AlarmClockColor.Name);
-			writer.WriteLine(alarmClock.IsWorking);
+			using (StreamWriter writer = new(isoStream))
+			{
+				writer.WriteLine(alarmClock.Name);
+				writer.WriteLine(alarmClock.AlarmTime);
+				writer.WriteLine(alarmClock.OwnerId);
+				writer.WriteLine(alarmClock.AlarmClockColor.Name);
+				writer.WriteLine(alarmClock.IsWorking);
+			}
+
+			string userFilePath = $"IsolatedStorage/user/{alarmClock.OwnerId}.txt";
+
+			try
+			{
+				isoStream = File.OpenWrite(userFilePath);
+			}
+			catch (Exception ex)
+			{
+				Log.Logger.Error($"AlarmClockCreate: Файл user/{alarmClock.OwnerId}.txt нельзя открыть.");
+				throw new AlarmClockCreateException(
+					$"Не удалось создать будильник {alarmClock.Id} для пользователя {alarmClock.OwnerId}.",
+					ex
+				);
+			}
+
+			List<string> previousUserLines = File.ReadAllLines(userFilePath).ToList();
+			previousUserLines.Insert(previousUserLines.IndexOf("A"), alarmClock.Id.ToString()!);
+			File.WriteAllLines(userFilePath, previousUserLines);
 
 			Log.Logger.Information("Создан файл будильника со следующей информацией:" +
 				$"{alarmClock.Name}," +
@@ -115,26 +136,35 @@ namespace RepositoriesImplementations
 			return alarmClock;
 		}
 
-		public void Delete(Guid guid)
+		public void Delete(Guid guid, Guid ownerId)
 		{
-			FileStream isoStream;
-			string filepath = $"IsolatedStorage/alarmclocks/{guid}.txt";
-			try
-			{
-				isoStream = new(filepath, FileMode.Open, FileAccess.Write);
-			}
-			catch (Exception ex)
+			string alarmClockFilePath = $"IsolatedStorage/alarmclocks/{guid}.txt";
+			if (File.Exists(alarmClockFilePath) == false)
 			{
 				Log.Logger.Error($"AlarmClockDelete: Файл alarmclocks/{guid}.txt не найден.");
 				throw new AlarmClockDeleteException(
-					$"Будильник на время {guid} не найден.",
+					$"Будильник {guid} не найден.",
+					new FileNotFoundException(alarmClockFilePath)
+				);
+			}
+
+			string userFilePath = $"IsolatedStorage/user/{ownerId}.txt";
+			try
+			{
+				List<string> previousUserLines = File.ReadAllLines(userFilePath).ToList();
+				previousUserLines.Remove(guid.ToString());
+				File.WriteAllLines(userFilePath, previousUserLines);
+			}
+			catch (Exception ex)
+			{
+				Log.Logger.Error($"AlarmClockDelete: Файл user/{ownerId}.txt не найден.");
+				throw new AlarmClockDeleteException(
+					$"Пользователь {ownerId} не найден.",
 					ex
 				);
 			}
 
-			isoStream.Close();
-			File.Delete(filepath);
-
+			File.Delete(alarmClockFilePath);
 			Log.Logger.Information($"AlarmClockDelete: Файл будильника {guid} удалён.");
 		}
 
@@ -182,52 +212,6 @@ namespace RepositoriesImplementations
 			);
 		}
 
-		public AlarmClock? GetAlarmClock(Guid guid, Guid ownerId)
-		{
-			FileStream isoStream;
-
-			try
-			{
-				isoStream = new(
-					$"IsolatedStorage/alarmclocks/{guid}.txt",
-					FileMode.Open,
-					FileAccess.Write
-				);
-			}
-			catch (Exception ex)
-			{
-				Log.Logger.Error($"AlarmClockGet: Ошибка открытия файла alarmclocks/{guid}.txt.");
-				throw new AlarmClockGetException(
-					$"Будильник {guid} пользователя {ownerId} не найден",
-					ex
-				);
-			}
-
-			using var readerStream = new StreamReader(isoStream);
-			string? alarmClockName = readerStream.ReadLine();
-			string? alarmClockTime = readerStream.ReadLine();
-			string? alarmClockOwnerId = readerStream.ReadLine();
-			string? alarmClockColor = readerStream.ReadLine();
-			string? alarmClockWork = readerStream.ReadLine();
-			if (alarmClockName == null || alarmClockTime == null || alarmClockColor == null || alarmClockWork == null || alarmClockOwnerId == null)
-			{
-				Log.Logger.Error($"AlarmClockGet: Ошибка разметки файла будильника {guid} пользователя {ownerId}.");
-				throw new ArgumentNullException();
-			}
-
-			if (Guid.Parse(alarmClockOwnerId) == ownerId)
-				return new AlarmClock(
-					guid,
-					DateTime.Parse(alarmClockTime),
-					alarmClockName,
-					Guid.Parse(alarmClockOwnerId),
-					Color.FromName(alarmClockColor),
-					bool.Parse(alarmClockWork)
-				);
-			else
-				return null;
-		}
-
 		public List<AlarmClock> GetAlarmClocks()
 		{
 			IEnumerable<string> filelist;
@@ -271,16 +255,13 @@ namespace RepositoriesImplementations
 			{
 				string? alarmClockId = streamReader.ReadLine();
 				if (alarmClockId != null)
-					alarmClockList.Add(GetAlarmClock(
-						ownerId,
-						Guid.Parse(alarmClockId)!
-					)!);
+					alarmClockList.Add(GetAlarmClock(Guid.Parse(alarmClockId)!));
 			}
 
 			return alarmClockList;
 		}
 
-		public List<AlarmClock> GetAlarmClocksByQuery(QueryStringParameters param, Guid ownerId)
+		public List<AlarmClock> GetAlarmClocks(Guid ownerId, QueryStringParameters param)
 		{
 			return GetAlarmClocks(ownerId)
 				.Skip((param.PageNumber - 1) * param.PageSize)

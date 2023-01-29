@@ -73,7 +73,7 @@ namespace WebAPI.Controllers
 		public ActionResult GetUsers([FromQuery] QueryStringParameters param)
 		{
 			List<UserDTO> userDTOs = new();
-			foreach (User user in _userService.GetUsersByQuery(param))
+			foreach (User user in _userService.GetUsers(param))
 				userDTOs.Add(UserDTO.ToDTO(user));
 
 			return new OkObjectResult(userDTOs);

@@ -8,9 +8,7 @@ using Repositories;
 
 using Serilog;
 
-using System;
 using System.Drawing;
-using System.IO;
 
 namespace RepositoriesImplementations
 {
@@ -118,12 +116,20 @@ namespace RepositoriesImplementations
 				string? alarmClockId = streamReader.ReadLine();
 				if (alarmClockId != null)
 				{
-					string fileToDelete = $"IsolatedStorage/alarmclocks/{alarmClockId}.txt";
-					if (File.Exists(fileToDelete))
+					try
 					{
-						File.Delete(fileToDelete);
-						Log.Logger.Information($"UserDeleteData: Будильник {alarmClockId} пользователя {guid} удалён.");
+						File.Delete($"IsolatedStorage/alarmclocks/{alarmClockId}.txt");
 					}
+					catch (Exception ex)
+					{
+						Log.Logger.Error($"UserDeleteData: Будильник {alarmClockId} пользователя {guid} не найден.");
+						throw new AlarmClockGetException(
+							$"Будильник {alarmClockId} пользователя {guid} не найден",
+							ex
+						);
+					}
+					Log.Logger.Information($"UserDeleteData: Будильник {alarmClockId} пользователя {guid} удалён.");
+
 				}
 			}
 
@@ -266,7 +272,7 @@ namespace RepositoriesImplementations
 			return usersList;
 		}
 
-		public List<User> GetUsersByQuery(QueryStringParameters param)
+		public List<User> GetUsers(QueryStringParameters param)
 		{
 			return GetUsers()
 				.Skip((param.PageNumber - 1) * param.PageSize)

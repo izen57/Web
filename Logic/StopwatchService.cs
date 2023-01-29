@@ -1,6 +1,7 @@
 ﻿using Model;
 
 using Serilog;
+
 using System.Drawing;
 
 namespace Logic

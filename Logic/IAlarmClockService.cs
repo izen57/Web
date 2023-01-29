@@ -6,10 +6,10 @@ namespace Logic
 	{
 		AlarmClock Create(AlarmClock alarmClock);
 		AlarmClock Edit(AlarmClock alarmClock);
-		void Delete(Guid guid);
+		void Delete(Guid guid, Guid ownerId);
 		AlarmClock? GetAlarmClock(Guid guid);
-		List<AlarmClock> GetAlarmClocks();
-		List<AlarmClock> GetAlarmClocksByQuery(QueryStringParameters param);
+		List<AlarmClock> GetAlarmClocks(Guid ownerId);
+		List<AlarmClock> GetAlarmClocks(Guid ownerId, QueryStringParameters param);
 		void InvertWork(AlarmClock alarmClock);
 	}
 }

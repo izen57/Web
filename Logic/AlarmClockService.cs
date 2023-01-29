@@ -25,9 +25,9 @@ namespace Logic
 			return _repository.Edit(alarmClock);
 		}
 
-		public void Delete(Guid guid)
+		public void Delete(Guid guid, Guid ownerId)
 		{
-			_repository.Delete(guid);
+			_repository.Delete(guid, ownerId);
 		}
 
 		public AlarmClock? GetAlarmClock(Guid guid)
@@ -35,24 +35,14 @@ namespace Logic
 			return _repository.GetAlarmClock(guid);
 		}
 
-		public AlarmClock? GetAlarmClock(Guid guid, Guid ownerId)
-		{
-			return _repository.GetAlarmClock(guid, ownerId);
-		}
-
-		public List<AlarmClock> GetAlarmClocks()
-		{
-			return _repository.GetAlarmClocks();
-		}
-
 		public List<AlarmClock> GetAlarmClocks(Guid ownerId)
 		{
 			return _repository.GetAlarmClocks(ownerId);
 		}
 
-		public List<AlarmClock> GetAlarmClocksByQuery(QueryStringParameters param)
+		public List<AlarmClock> GetAlarmClocks(Guid ownerId, QueryStringParameters param)
 		{
-			return _repository.GetAlarmClocksByQuery(param);
+			return _repository.GetAlarmClocks(ownerId, param);
 		}
 
 		public void InvertWork(AlarmClock alarmClock)
