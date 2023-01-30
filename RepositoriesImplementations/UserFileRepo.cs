@@ -36,6 +36,16 @@ namespace RepositoriesImplementations
 
 		public User Create(User user)
 		{
+			List<User> existingUsers = GetUsers();
+			if (existingUsers.DistinctBy(user => user.Name).Count() != existingUsers.Count)
+			{
+				Log.Logger.Error($"UserCreate: Пользователь с логином {user.Name} уже существует. Ид-ор: {user.Id}.");
+				throw new UserCreateException(
+					$"Пользователь с логином {user.Name} уже существует.",
+					new IOException("already exists")
+				);
+			}
+
 			if (File.Exists($"IsolatedStorage/users/{user.Id}.txt"))
 			{
 				Log.Logger.Error($"UserCreate: Файл users/{user.Id}.txt нельзя открыть.");

@@ -16,10 +16,12 @@ namespace WebAPI.Controllers
 	public class UsersController: ControllerBase
 	{
 		readonly IUserService _userService;
+		readonly IConfiguration _configuration;
 
-		public UsersController(IUserService userService)
+		public UsersController(IUserService userService, IConfiguration configuration)
 		{
 			_userService = userService;
+			_configuration = configuration;
 		}
 
 		/// <summary>
@@ -45,7 +47,7 @@ namespace WebAPI.Controllers
 			);
 			try
 			{
-				_userService.Create(user);
+				user = _userService.Create(user);
 				return new CreatedResult("Users' storage", UserDTO.ToDTO(user));
 			}
 			catch (UserCreateException e) when (e.InnerException.Message.Contains("Read-only file system"))
@@ -56,6 +58,28 @@ namespace WebAPI.Controllers
 			{
 				return StatusCode(500);
 			}
+		}
+
+		/// <summary>
+		/// Аутентифицирует зарегистрированного пользователя
+		/// </summary>
+		/// <param name="userDTOCreate">Логин и пароль зарегистрированного пользователя</param>
+		/// <returns>Существующий пользователь</returns>
+		/// <respons code="200">Пользователь успешно аутентифицирован</respons>
+		/// <respons code="404">Пользователь не найден</respons>
+		/// <respons code="500">Ошибка аутентификации пользователя</respons>
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserDTOResponse))]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+		[HttpPost("register")]
+		public ActionResult Authenticate([FromBody] UserDTOCreate userDTOCreate)
+		{
+			User? user = _userService.GetUsers().Find(user => user.Name == userDTOCreate.Name && user.Password == userDTOCreate.Password);
+			if (user == null)
+				return new NotFoundResult();
+
+			string token = _configuration.GenerateJwtToken(user);
+			return new OkObjectResult(new UserDTOResponse(user.Name, user.Password, token));
 		}
 
 		/// <summary>

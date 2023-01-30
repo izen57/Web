@@ -33,7 +33,8 @@ namespace WebAPI.Controllers
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public ActionResult GetAlarmClocks([FromQuery] QueryStringParameters param)
 		{
-			var list = _alarmClockService.GetAlarmClocksByQuery(param);
+			Guid userFromResponse = Guid.Parse(HttpContext.User.ToString());
+			var list = _alarmClockService.GetAlarmClocks(userFromResponse, param);
 
 			List<AlarmClockDTO> listDTO = new();
 			if (list.Count > 0)
