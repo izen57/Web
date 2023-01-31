@@ -7,8 +7,8 @@ namespace Logic
 		Note Create(Note note);
 		Note Edit(Note note);
 		void Delete(Guid id, Guid ownerId);
-		List<Note> GetNotes(Guid ownerId);
 		Note? GetNote(Guid guid);
+		List<Note> GetNotes(Guid ownerId);
 		List<Note> GetNotes(Guid ownerId, QueryStringParameters param);
 	}
 }

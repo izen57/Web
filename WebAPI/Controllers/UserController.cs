@@ -13,15 +13,14 @@ namespace WebAPI.Controllers
 {
 	[ApiController]
 	[Route("api/v1/users")]
-	public class UsersController: ControllerBase
+	[Produces("application/json")]
+	public class UserController: ControllerBase
 	{
 		readonly IUserService _userService;
-		readonly IConfiguration _configuration;
 
-		public UsersController(IUserService userService, IConfiguration configuration)
+		public UserController(IUserService userService)
 		{
 			_userService = userService;
-			_configuration = configuration;
 		}
 
 		/// <summary>
@@ -30,12 +29,13 @@ namespace WebAPI.Controllers
 		/// <param name="userDTOCreate">Логин и пароль нового пользователя</param>
 		/// <returns>Новый пользователь</returns>
 		/// <respons code="201">Новый пользователь успешно зарегистрирован</respons>
-		/// <respons code="403">Недостаточно прав</respons>
+		/// <respons code="401">Такой пользователь уже существует</respons>
+		/// <respons code="403">У Вас нет прав доступа</respons>
 		/// <respons code="500">Ошибка создания пользователя</respons>
+		[HttpPost("register")]
 		[ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserDTO))]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-		[HttpPost("register")]
 		public ActionResult Register([FromBody] UserDTOCreate userDTOCreate)
 		{
 			User user = new(
@@ -54,9 +54,9 @@ namespace WebAPI.Controllers
 			{
 				return StatusCode(403);
 			}
-			catch
+			catch (UserCreateException e) when (e.InnerException.Message.Contains("already exists"))
 			{
-				return StatusCode(500);
+				return StatusCode(401);
 			}
 		}
 
@@ -68,17 +68,17 @@ namespace WebAPI.Controllers
 		/// <respons code="200">Пользователь успешно аутентифицирован</respons>
 		/// <respons code="404">Пользователь не найден</respons>
 		/// <respons code="500">Ошибка аутентификации пользователя</respons>
+		[HttpPost("authenticate")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserDTOResponse))]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-		[HttpPost("register")]
 		public ActionResult Authenticate([FromBody] UserDTOCreate userDTOCreate)
 		{
 			User? user = _userService.GetUsers().Find(user => user.Name == userDTOCreate.Name && user.Password == userDTOCreate.Password);
 			if (user == null)
 				return new NotFoundResult();
 
-			string token = _configuration.GenerateJwtToken(user);
+			string token = JWTMiddleware.GenerateJwtToken(user);
 			return new OkObjectResult(new UserDTOResponse(user.Name, user.Password, token));
 		}
 
@@ -88,12 +88,15 @@ namespace WebAPI.Controllers
 		/// <param name="param">Номер и размер страницы</param>
 		/// <returns>Новый пользователь</returns>
 		/// <respons code="200">Пользователи успешно возвращены</respons>
-		/// <respons code="403">Недостаточно прав</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<UserDTO>))]
-		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		/// <respons code="401">Необходима авторизация</respons>
+		/// <respons code="403">Недостаточно прав</respons>
 		[Authorize]
 		[HttpGet("")]
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<UserDTO>))]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		public ActionResult GetUsers([FromQuery] QueryStringParameters param)
 		{
 			List<UserDTO> userDTOs = new();
@@ -110,14 +113,16 @@ namespace WebAPI.Controllers
 		/// <returns>Новый пользователь</returns>
 		/// <respons code="200">Пользователь найден</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
-		/// <respons code="403">Недостаточно прав</respons>
+		/// <respons code="401">Необходима авторизация</respons>
+		/// <respons code="403">У Вас нет прав доступа</respons>
 		/// <respons code="404">Пользователь не найден</respons>
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserDTO))]
-		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		[Authorize]
 		[HttpGet("{Id}")]
-		public ActionResult GetUser([FromQuery] Guid Id)
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserDTO))]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public ActionResult GetUser([FromRoute] Guid Id)
 		{
 			UserDTO? userDTO;
 			try
@@ -144,12 +149,14 @@ namespace WebAPI.Controllers
 		/// <returns>Изменённый пользователь</returns>
 		/// <respons code="200">Существующий пользователь успешно изменён</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
-		/// <respons code="403">Недостаточно прав</respons>
+		/// <respons code="401">Необходима авторизация</respons>
+		/// <respons code="403">У Вас нет прав доступа</respons>
 		/// <respons code="404">Пользователь не найден</respons>
 		[Authorize]
-		[HttpPatch("{Id}")]
+		[HttpPut("{Id}")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public ActionResult EditUser([FromBody] UserDTOCreate userDTOCreate, [FromRoute] Guid Id)
@@ -176,17 +183,19 @@ namespace WebAPI.Controllers
 		}
 
 		/// <summary>
-		/// Удаляет пользователя и все его данные по его идентификатору
+		/// Удаляет пользователя и все его данные по идентификатору
 		/// </summary>
 		/// <param name="Id">Идентификатор пользователя</param>
 		/// <respons code="200">Пользователь успешно удалён</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
+		/// <respons code="401">Необходима авторизация</respons>
 		/// <respons code="403">Недостаточно прав</respons>
 		/// <respons code="404">Пользователь не найден</respons>
 		[Authorize]
 		[HttpDelete("{Id}")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public ActionResult DeleteUser([FromRoute] Guid Id)

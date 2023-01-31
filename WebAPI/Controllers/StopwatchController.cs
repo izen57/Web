@@ -1,5 +1,6 @@
 ﻿using Logic;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using System.Drawing;
@@ -10,6 +11,7 @@ namespace WebAPI.Controllers
 {
 	[ApiController]
 	[Route("api/v1/stopwatch")]
+	[Produces("application/json")]
 	public class StopwatchController: ControllerBase
 	{
 		private readonly IStopwatchService _stopwatchService;
@@ -22,14 +24,17 @@ namespace WebAPI.Controllers
 		/// <summary>
 		/// Возращает секундомер
 		/// </summary>
-		/// <returns>Cекундомер</returns>
-		/// <remarks cref="StopwatchDTO"></remarks>
+		/// <returns>Текущее состояние секундомера</returns>
 		/// <respons code="200">Секундомер найден</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
+		/// <respons code="401">Необходима авторизация</respons>
+		/// <respons code="403">У Вас нет прав доступа</respons>
+		[Authorize]
 		[HttpGet("")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StopwatchDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		public ActionResult GetStopwatch()
 		{
 			return new OkObjectResult(StopwatchDTO.ToDTO(_stopwatchService.Get()));
@@ -42,19 +47,22 @@ namespace WebAPI.Controllers
 		/// <param name="stopwatchDTO">Изменяемые поля параметра</param>
 		/// <respons code="200">Секундомер изменён</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
+		/// <respons code="401">Необходима авторизация</respons>
 		/// <respons code="403">У Вас нет прав доступа</respons>
+		[Authorize]
 		[HttpPatch("")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StopwatchDTO))]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public ActionResult StopwatchAction([FromBody] StopwatchDTO stopwatchDTO)
 		{
 			try
 			{
-				if (stopwatchDTO.Name is not null)
+				if (stopwatchDTO.Name != null)
 					_stopwatchService.EditName(stopwatchDTO.Name);
 
-				if (stopwatchDTO.StopwatchColor is not null)
+				if (stopwatchDTO.StopwatchColor != null)
 					_stopwatchService.EditColor(Color.FromName(stopwatchDTO.StopwatchColor));
 
 				if (stopwatchDTO.IsWorking == true)
@@ -64,7 +72,7 @@ namespace WebAPI.Controllers
 
 				if (stopwatchDTO.ResetSignal == true)
 					_stopwatchService.Reset();
-				if (stopwatchDTO.TimeFlags is not null)
+				if (stopwatchDTO.TimeFlags != null)
 					_stopwatchService.AddStopwatchFlag();
 			}
 			catch (Exception e) when (e.Message.Contains("Read-only file system"))

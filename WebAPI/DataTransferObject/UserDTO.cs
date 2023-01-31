@@ -42,11 +42,11 @@ namespace WebAPI.DataTransferObject
 		{
 			List<AlarmClock> alarmClocks = new();
 			foreach (AlarmClockDTO alarmClockDTO in userDTO.UserAlarmClocks)
-				alarmClocks.Add(AlarmClockDTO.FromDTO(alarmClockDTO, userDTO.Id));
+				alarmClocks.Add(AlarmClockDTO.FromDTO(alarmClockDTO));
 
 			List<Note> notes = new();
 			foreach (NoteDTO noteDTO in userDTO.UserNotes)
-				notes.Add(NoteDTO.FromDTO(noteDTO, userDTO.Id));
+				notes.Add(NoteDTO.FromDTO(noteDTO));
 
 			return new User(
 				userDTO.Id,

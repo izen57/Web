@@ -7,6 +7,7 @@ using Repositories;
 using Serilog;
 
 using System.Drawing;
+using System.Net.Security;
 
 namespace RepositoriesImplementations
 {
@@ -60,36 +61,35 @@ namespace RepositoriesImplementations
 
 			using (StreamWriter writer = new(isoStream))
 			{
+				writer.WriteLine(alarmClock.OwnerId);
 				writer.WriteLine(alarmClock.Name);
 				writer.WriteLine(alarmClock.AlarmTime);
-				writer.WriteLine(alarmClock.OwnerId);
 				writer.WriteLine(alarmClock.AlarmClockColor.Name);
 				writer.WriteLine(alarmClock.IsWorking);
 			}
+			isoStream.Close();
 
-			string userFilePath = $"IsolatedStorage/user/{alarmClock.OwnerId}.txt";
-
+			string userFilePath = $"IsolatedStorage/users/{alarmClock.OwnerId}.txt";
 			try
 			{
-				isoStream = File.OpenWrite(userFilePath);
+				List<string> previousUserLines = File.ReadAllLines(userFilePath).ToList();
+				previousUserLines.Insert(previousUserLines.IndexOf("A") + 1, alarmClock.Id.ToString()!);
+				File.WriteAllLines(userFilePath, previousUserLines);
 			}
 			catch (Exception ex)
 			{
-				Log.Logger.Error($"AlarmClockCreate: Файл user/{alarmClock.OwnerId}.txt нельзя открыть.");
+				File.Delete(alarmClockFilePath);
+				Log.Logger.Error($"AlarmClockCreate: Файл users/{alarmClock.OwnerId}.txt нельзя открыть.");
 				throw new AlarmClockCreateException(
 					$"Не удалось создать будильник {alarmClock.Id} для пользователя {alarmClock.OwnerId}.",
 					ex
 				);
 			}
 
-			List<string> previousUserLines = File.ReadAllLines(userFilePath).ToList();
-			previousUserLines.Insert(previousUserLines.IndexOf("A"), alarmClock.Id.ToString()!);
-			File.WriteAllLines(userFilePath, previousUserLines);
-
 			Log.Logger.Information("Создан файл будильника со следующей информацией:" +
+				$"{alarmClock.OwnerId}," +
 				$"{alarmClock.Name}," +
 				$"{alarmClock.AlarmTime}," +
-				$"{alarmClock.OwnerId}," +
 				$"{alarmClock.AlarmClockColor.Name}," +
 				$"{alarmClock.IsWorking}."
 			);
@@ -118,21 +118,22 @@ namespace RepositoriesImplementations
 
 			using (StreamWriter writer = new(isoStream))
 			{
+				writer.WriteLine(alarmClock.OwnerId);
 				writer.WriteLine(alarmClock.Name);
 				writer.WriteLine(alarmClock.AlarmTime);
-				writer.WriteLine(alarmClock.OwnerId);
 				writer.WriteLine(alarmClock.AlarmClockColor.Name);
 				writer.WriteLine(alarmClock.IsWorking);
 			}
 
 			Log.Logger.Information("Файл будильника изменён. Новая информация:" +
+				$"{alarmClock.OwnerId}," +
 				$"{alarmClock.Name}," +
 				$"{alarmClock.AlarmTime}," +
-				$"{alarmClock.OwnerId}," +
 				$"{alarmClock.AlarmClockColor.Name}," +
 				$"{alarmClock.IsWorking}."
 			);
 
+			isoStream.Close();
 			return alarmClock;
 		}
 
@@ -148,7 +149,7 @@ namespace RepositoriesImplementations
 				);
 			}
 
-			string userFilePath = $"IsolatedStorage/user/{ownerId}.txt";
+			string userFilePath = $"IsolatedStorage/users/{ownerId}.txt";
 			try
 			{
 				List<string> previousUserLines = File.ReadAllLines(userFilePath).ToList();
@@ -157,7 +158,7 @@ namespace RepositoriesImplementations
 			}
 			catch (Exception ex)
 			{
-				Log.Logger.Error($"AlarmClockDelete: Файл user/{ownerId}.txt не найден.");
+				Log.Logger.Error($"AlarmClockDelete: Файл users/{ownerId}.txt не найден.");
 				throw new AlarmClockDeleteException(
 					$"Пользователь {ownerId} не найден.",
 					ex
@@ -177,7 +178,7 @@ namespace RepositoriesImplementations
 				isoStream = new(
 					$"IsolatedStorage/alarmclocks/{guid}.txt",
 					FileMode.Open,
-					FileAccess.Write
+					FileAccess.Read
 				);
 			}
 			catch (Exception ex)
@@ -191,9 +192,9 @@ namespace RepositoriesImplementations
 			}
 
 			using var readerStream = new StreamReader(isoStream);
+			string? alarmClockOwnerId = readerStream.ReadLine();
 			string? alarmClockName = readerStream.ReadLine();
 			string? alarmClockTime = readerStream.ReadLine();
-			string? alarmClockOwnerId = readerStream.ReadLine();
 			string? alarmClockColor = readerStream.ReadLine();
 			string? alarmClockWork = readerStream.ReadLine();
 			if (alarmClockName == null || alarmClockTime == null || alarmClockColor == null || alarmClockWork == null || alarmClockOwnerId == null)
@@ -202,6 +203,7 @@ namespace RepositoriesImplementations
 				throw new ArgumentNullException();
 			}
 
+			isoStream.Close();
 			return new AlarmClock(
 				guid,
 				DateTime.Parse(alarmClockTime),
@@ -218,7 +220,7 @@ namespace RepositoriesImplementations
 			List<AlarmClock> alarmClockList = new();
 			try
 			{
-				filelist = Directory.EnumerateFiles("IsolatedStorage/alarmclocks");
+				filelist = Directory.EnumerateFiles("IsolatedStorage/alarmclocks/");
 			}
 			catch (Exception ex)
 			{
@@ -245,19 +247,18 @@ namespace RepositoriesImplementations
 			FileStream fileStream = new(
 				$"IsolatedStorage/users/{ownerId}.txt",
 				FileMode.Open,
-				FileAccess.Write
+				FileAccess.Read
 			);
 			StreamReader streamReader = new(fileStream);
 
 			while (streamReader.ReadLine() != "A")
 				;
-			while (streamReader.ReadLine() != "A")
-			{
-				string? alarmClockId = streamReader.ReadLine();
+			string? alarmClockId;
+			while ((alarmClockId = streamReader.ReadLine()) != "A")
 				if (alarmClockId != null)
 					alarmClockList.Add(GetAlarmClock(Guid.Parse(alarmClockId)!));
-			}
 
+			fileStream.Close();
 			return alarmClockList;
 		}
 

@@ -2,9 +2,12 @@
 
 using Logic;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using Model;
+
+using System.Drawing;
 
 using WebAPI.DataTransferObject;
 
@@ -12,11 +15,12 @@ namespace WebAPI.Controllers
 {
 	[ApiController]
 	[Route("api/v1/alarmclocks")]
-	public class AlarmClocksController: ControllerBase
+	[Produces("application/json")]
+	public class AlarmClockController: ControllerBase
 	{
 		readonly IAlarmClockService _alarmClockService;
 
-		public AlarmClocksController(IAlarmClockService alarmClockService)
+		public AlarmClockController(IAlarmClockService alarmClockService)
 		{
 			_alarmClockService = alarmClockService;
 		}
@@ -28,12 +32,17 @@ namespace WebAPI.Controllers
 		/// <param name="param">Номер и размер страницы</param>
 		/// <respons code="200">Будильники успешно возвращены</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
+		/// <respons code="401">Необходима авторизация</respons>
+		/// <respons code="403">У Вас нет прав доступа</respons>
+		[Authorize]
 		[HttpGet("")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<AlarmClockDTO>))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		public ActionResult GetAlarmClocks([FromQuery] QueryStringParameters param)
 		{
-			Guid userFromResponse = Guid.Parse(HttpContext.User.ToString());
+			Guid userFromResponse = Guid.Parse(HttpContext.Items["User ID"].ToString());
 			var list = _alarmClockService.GetAlarmClocks(userFromResponse, param);
 
 			List<AlarmClockDTO> listDTO = new();
@@ -50,18 +59,30 @@ namespace WebAPI.Controllers
 		/// <param name="alarmClockDTOCreate">Создаваемый будильник</param>
 		/// <respons code="201">Будильник успешно создан</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
-		/// <respons code="403">Недостаточно прав</respons>
+		/// <respons code="401">Необходима авторизация</respons>
+		/// <respons code="403">У Вас нет прав доступа</respons>
+		[Authorize]
 		[HttpPost("")]
 		[ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AlarmClockDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		public ActionResult CreateAlarmClock([FromBody] AlarmClockDTOCreate alarmClockDTOCreate)
 		{
+			if (alarmClockDTOCreate == null)
+				return StatusCode(400);
+			Guid userFromResponse = Guid.Parse(HttpContext.Items["User ID"].ToString());
+			AlarmClock alarmClock = new(
+				Guid.NewGuid(),
+				alarmClockDTOCreate.AlarmTime,
+				alarmClockDTOCreate.Name,
+				userFromResponse,
+				Color.FromName(alarmClockDTOCreate.AlarmClockColor),
+				alarmClockDTOCreate.IsWorking
+			);
 			try
 			{
-				Guid alarmClockId = Guid.NewGuid();
-				AlarmClock alarmClock = AlarmClockDTO.FromDTO(alarmClockDTOCreate, Guid.NewGuid());
-				alarmClockDTO = AlarmClockDTO.ToDTO(_alarmClockService.Create(alarmClock));
+				alarmClock = _alarmClockService.Create(alarmClock);
 			}
 			catch (AlarmClockCreateException e) when (e.InnerException.Message.Contains("Read-only file system"))
 			{
@@ -71,29 +92,40 @@ namespace WebAPI.Controllers
 			{
 				return StatusCode(409);
 			}
-			return new CreatedResult("Alarm clocks' isolated storage", alarmClockDTO);
+			return new CreatedResult("Alarm clocks' isolated storage", AlarmClockDTO.ToDTO(alarmClock));
 		}
 
 		/// <summary>
-		/// Обновляет существующий будильник по дате и времени
+		/// Обновляет существующий будильник по идентификатору
 		/// </summary>
-		/// <param name="alarmClockDTO">Изменяемый будильник</param>
-		/// <param name="alarmClockTime">Старое время будильника</param>
+		/// <param name="alarmClockDTOCreate">Изменяемый будильник</param>
+		/// <param name="Id">Идентификатор будильника</param>
 		/// <respons code="200">Существующий будильник изменён</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
+		/// <respons code="401">Необходима авторизация</respons>
 		/// <respons code="403">У Вас нет прав доступа</respons>
 		/// <respons code="404">Будильник не найден</respons>
-		[HttpPatch("{alarmClockTime}")]
+		[Authorize]
+		[HttpPut("{Id}")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AlarmClockDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public ActionResult EditAlarmClock([FromBody] AlarmClockDTO alarmClockDTO, [FromRoute] DateTime alarmClockTime)
+		public ActionResult EditAlarmClock([FromBody] AlarmClockDTOCreate alarmClockDTOCreate, [FromRoute] Guid Id)
 		{
+			AlarmClock? alarmClock = _alarmClockService.GetAlarmClock(Id);
+			if (alarmClock == null)
+				return new NotFoundResult();
+
+			alarmClock.Name = alarmClockDTOCreate.Name;
+			alarmClock.AlarmTime = alarmClockDTOCreate.AlarmTime;
+			alarmClock.AlarmClockColor = Color.FromName(alarmClockDTOCreate.AlarmClockColor);
+			alarmClock.IsWorking = alarmClockDTOCreate.IsWorking;
+
 			try
 			{
-				AlarmClock alarmClock = AlarmClockDTO.FromDTO(alarmClockDTO);
-				alarmClockDTO = AlarmClockDTO.ToDTO(_alarmClockService.Edit(alarmClock, alarmClockTime));
+				alarmClock = _alarmClockService.Edit(alarmClock);
 			}
 			catch (AlarmClockEditException e) when (e.InnerException.Message.Contains("Read-only file system"))
 			{
@@ -107,24 +139,29 @@ namespace WebAPI.Controllers
 			{
 				return new BadRequestResult();
 			}
-			return new OkObjectResult(alarmClockDTO);
+			return new OkObjectResult(AlarmClockDTO.ToDTO(alarmClock));
 		}
 
 		/// <summary>
-		/// Возвращает будильник по заданным дате и времени
+		/// Возвращает будильник по заданному идентификатору
 		/// </summary>
-		/// <param name="alarmClockTime">Время искомого будильника</param>
+		/// <param name="Id">Идентификатор искомого будильника</param>
 		/// <returns>Изменённый будильник</returns>
 		/// <respons code="200">Будильник найден</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
+		/// <respons code="401">Необходима авторизация</respons>
+		/// <respons code="403">У Вас нет прав доступа</respons>
 		/// <respons code="404">Будильник не найден</respons>
-		[HttpGet("{alarmClockTime}")]
+		[Authorize]
+		[HttpGet("{Id}")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AlarmClockDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public ActionResult GetAlarmClock([FromRoute] DateTime alarmClockTime)
+		public ActionResult GetAlarmClock([FromRoute] Guid Id)
 		{
-			var alarmClock = _alarmClockService.GetAlarmClock(alarmClockTime);
+			AlarmClock? alarmClock = _alarmClockService.GetAlarmClock(Id);
 			if (alarmClock != null)
 				return new OkObjectResult(AlarmClockDTO.ToDTO(alarmClock));
 			else
@@ -132,23 +169,27 @@ namespace WebAPI.Controllers
 		}
 
 		/// <summary>
-		/// Удаляет будильник по времени и дате
+		/// Удаляет будильник по идентификатору
 		/// </summary>
-		/// <param name="alarmClockTime">Время искомого будильника</param>
+		/// <param name="Id">Идентификатор искомого будильника</param>
 		/// <respons code="200">Будильник успешно удалён</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
+		/// <respons code="401">Необходима авторизация</respons>
 		/// <respons code="403">У Вас нет прав доступа</respons>
 		/// <respons code="404">Будильник не найден</respons>
-		[HttpDelete("{alarmClockTime}")]
+		[Authorize]
+		[HttpDelete("{Id}")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public ActionResult DeleteAlarmClock([FromRoute] DateTime alarmClockTime)
+		public ActionResult DeleteAlarmClock([FromRoute] Guid Id)
 		{
+			Guid userFromResponse = Guid.Parse(HttpContext.Items["User ID"].ToString());
 			try
 			{
-				_alarmClockService.Delete(alarmClockTime);
+				_alarmClockService.Delete(Id, userFromResponse);
 			}
 			catch (AlarmClockDeleteException e) when (e.InnerException.Message.Contains("Read-only file system"))
 			{

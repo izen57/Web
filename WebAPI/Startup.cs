@@ -67,8 +67,7 @@ namespace IO.Swagger
 
 			services
 				.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-				.AddJwtBearer(options =>
-				{
+				.AddJwtBearer(options => 
 					options.TokenValidationParameters = new TokenValidationParameters
 					{
 						ValidateIssuer = true,
@@ -78,12 +77,14 @@ namespace IO.Swagger
 						ValidateLifetime = true,
 						IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
 						ValidateIssuerSigningKey = true,
-					};
-				});
+					}
+				);
 
 			services
+				.AddSingleton<IHttpContextAccessor, HttpContextAccessor>()
 				.AddSingleton<IAlarmClockRepo, AlarmClockFileRepo>()
 				.AddSingleton<INoteRepo, NoteFileRepo>()
+				.AddSingleton<IUserRepo, UserFileRepo>()
 				//.AddSingleton(new Stopwatch(
 				//	"Секундомер",
 				//	System.Drawing.Color.White,
@@ -94,7 +95,8 @@ namespace IO.Swagger
 				.AddSingleton<Stopwatch>()
 				.AddSingleton<IAlarmClockService, AlarmClockService>()
 				.AddSingleton<INoteService, NoteService>()
-				.AddSingleton<IStopwatchService, StopwatchService>();
+				.AddSingleton<IStopwatchService, StopwatchService>()
+				.AddSingleton<IUserService, UserService>();
 
 			services
 				.AddSwaggerGen(setup =>
@@ -106,22 +108,20 @@ namespace IO.Swagger
 						Scheme = "Bearer",
 						BearerFormat = "JWT",
 						In = ParameterLocation.Header,
-						Description = "Description = \"JWT Authorization header using the Bearer scheme. \\r\\n\\r\\n Enter 'Bearer' [space] and then your token in the text input below.\\r\\n\\r\\nExample: \\\"Bearer 12345qwerty\\\""
+						Description = "JWT Authorization header using the Bearer scheme."
 					});
 					setup.AddSecurityRequirement(new OpenApiSecurityRequirement
-					{
+					{{
+						new OpenApiSecurityScheme
 						{
-							new OpenApiSecurityScheme
+							Reference = new OpenApiReference
 							{
-								Reference = new OpenApiReference
-								{
-									Type = ReferenceType.SecurityScheme,
-									Id = "Bearer"
-								}
-							},
-							Array.Empty<string>()
-						}
-					});
+								Type = ReferenceType.SecurityScheme,
+								Id = "Bearer"
+							}
+						},
+						Array.Empty<string>()
+					}});
 					setup.SwaggerDoc("0.1.0", new OpenApiInfo
 					{
 						Version = "0.1.0",
@@ -150,21 +150,18 @@ namespace IO.Swagger
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
 		{
 			app
+				.UseStaticFiles()
 				.UseRouting()
 				.UseAuthentication()
 				.UseAuthorization()
-				.UseStaticFiles()
 				.UseSwagger()
 				.UseSwaggerUI(c =>
 				{
-					//c.RoutePrefix = "api/v1";
+					c.RoutePrefix = "api/v1";
 					c.SwaggerEndpoint("/swagger/0.1.0/swagger.json", "NotStopAlarm");
 				})
-				.UseEndpoints(endpoints =>
-				{
-					endpoints.MapControllers();
-				})
 				.UseMiddleware<JWTMiddleware>()
+				.UseEndpoints(endpoints => endpoints.MapControllers())
 				.UseDeveloperExceptionPage();
 		}
 	}
@@ -174,6 +171,7 @@ namespace IO.Swagger
 		public const string ISSUER = "MyAuthServer"; // издатель токена
 		public const string AUDIENCE = "MyAuthClient"; // потребитель токена
 		const string KEY = "mysupersecret_secretkey!123"; // ключ для шифрации
+
 		public static SymmetricSecurityKey GetSymmetricSecurityKey() =>
 			new(Encoding.UTF8.GetBytes(KEY));
 	}

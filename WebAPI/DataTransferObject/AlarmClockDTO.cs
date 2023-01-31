@@ -37,13 +37,13 @@ namespace WebAPI.DataTransferObject
 			);
 		}
 
-		public static AlarmClock FromDTO(AlarmClockDTO alarmClockDTO, Guid ownerId)
+		public static AlarmClock FromDTO(AlarmClockDTO alarmClockDTO)
 		{
 			return new AlarmClock(
 				alarmClockDTO.Id,
 				alarmClockDTO.AlarmTime,
 				alarmClockDTO.Name,
-				ownerId,
+				alarmClockDTO.OwnerId,
 				Color.FromName(alarmClockDTO.AlarmClockColor),
 				alarmClockDTO.IsWorking
 			);

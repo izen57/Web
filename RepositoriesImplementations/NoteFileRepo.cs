@@ -32,7 +32,8 @@ namespace RepositoriesImplementations
 
 		public Note Create(Note note)
 		{
-			if (File.Exists($"IsolatedStorage/notes/{note.Id}.txt"))
+			string noteFilePath = $"IsolatedStorage/notes/{note.Id}.txt";
+			if (File.Exists(noteFilePath))
 			{
 				Log.Logger.Error($"NoteCreate: Файл notes/{note.Id}.txt нельзя открыть.");
 				throw new NoteCreateException(
@@ -44,7 +45,7 @@ namespace RepositoriesImplementations
 			FileStream isoStream;
 			try
 			{
-				isoStream = File.Create($"IsolatedStorage/notes/{note.Id}.txt");
+				isoStream = File.Create(noteFilePath);
 			}
 			catch (Exception ex)
 			{
@@ -57,30 +58,29 @@ namespace RepositoriesImplementations
 
 			using (StreamWriter TextNote = new(isoStream))
 			{
-				TextNote.WriteLine(note.CreationTime);
 				TextNote.WriteLine(note.OwnerId);
+				TextNote.WriteLine(note.CreationTime);
 				TextNote.WriteLine(note.Body);
 				TextNote.WriteLine(note.IsTemporal);
 			}
+			isoStream.Close();
 
-			string userFilePath = $"IsolatedStorage/user/{note.OwnerId}.txt";
-
+			string userFilePath = $"IsolatedStorage/users/{note.OwnerId}.txt";
 			try
 			{
-				isoStream = File.OpenWrite(userFilePath);
+				List<string> previousUserLines = File.ReadAllLines(userFilePath).ToList();
+				previousUserLines.Insert(previousUserLines.IndexOf("N") + 1, note.Id.ToString()!);
+				File.WriteAllLines(userFilePath, previousUserLines);
 			}
 			catch (Exception ex)
 			{
-				Log.Logger.Error($"AlarmClockCreate: Файл user/{note.OwnerId}.txt нельзя открыть.");
+				File.Delete(noteFilePath);
+				Log.Logger.Error($"AlarmClockCreate: Файл users/{note.OwnerId}.txt нельзя открыть.");
 				throw new NoteCreateException(
-					$"Не удалось создать будильник {note.Id} для пользователя {note.OwnerId}.",
+					$"Не удалось создать заметку {note.Id} для пользователя {note.OwnerId}.",
 					ex
 				);
 			}
-
-			List<string> previousUserLines = File.ReadAllLines(userFilePath).ToList();
-			previousUserLines.Insert(previousUserLines.IndexOf("N"), note.Id.ToString()!);
-			File.WriteAllLines(userFilePath, previousUserLines);
 
 			Log.Logger.Information(
 				"NoteCreate: Создан файл заметки со следующей информацией:\n" +
@@ -116,8 +116,8 @@ namespace RepositoriesImplementations
 
 			using StreamWriter writer = new(isoStream);
 
-			writer.WriteLine(note.CreationTime);
 			writer.WriteLine(note.OwnerId);
+			writer.WriteLine(note.CreationTime);
 			writer.WriteLine(note.Body);
 			writer.WriteLine(note.IsTemporal);
 
@@ -129,6 +129,7 @@ namespace RepositoriesImplementations
 				$"{note.IsTemporal}."
 			);
 
+			isoStream.Close();
 			return note;
 		}
 
@@ -144,7 +145,7 @@ namespace RepositoriesImplementations
 				);
 			}
 
-			string userFilePath = $"IsolatedStorage/user/{ownerId}.txt";
+			string userFilePath = $"IsolatedStorage/users/{ownerId}.txt";
 			try
 			{
 				List<string> previousUserLines = File.ReadAllLines(userFilePath).ToList();
@@ -153,7 +154,7 @@ namespace RepositoriesImplementations
 			}
 			catch (Exception ex)
 			{
-				Log.Logger.Error($"NoteDelete: Файл user/{ownerId}.txt не найден.");
+				Log.Logger.Error($"NoteDelete: Файл users/{ownerId}.txt не найден.");
 				throw new NoteDeleteException(
 					$"Пользователь {ownerId} не найден.",
 					ex
@@ -173,7 +174,7 @@ namespace RepositoriesImplementations
 				isoStream = new(
 					$"IsolatedStorage/notes/{guid}.txt",
 					FileMode.Open,
-					FileAccess.Write
+					FileAccess.Read
 				);
 			}
 			catch (Exception ex)
@@ -187,9 +188,9 @@ namespace RepositoriesImplementations
 			}
 
 			using var readerStream = new StreamReader(isoStream);
+			string? noteOwnerId = readerStream.ReadLine();
 			string? noteCreationTime = readerStream.ReadLine();
 			string? noteBody = readerStream.ReadLine();
-			string? noteOwnerId = readerStream.ReadLine();
 			string? noteIsTemporal = readerStream.ReadLine();
 			if (noteCreationTime == null || noteBody == null || noteIsTemporal == null || noteOwnerId == null)
 			{
@@ -197,6 +198,7 @@ namespace RepositoriesImplementations
 				throw new ArgumentNullException();
 			}
 
+			isoStream.Close();
 			return new Note(
 				guid,
 				DateTime.Parse(noteCreationTime),
@@ -212,7 +214,7 @@ namespace RepositoriesImplementations
 			List<Note> noteList = new();
 			try
 			{
-				filelist = Directory.EnumerateFiles("IsolatedStorage/notes");
+				filelist = Directory.EnumerateFiles("IsolatedStorage/notes/");
 			}
 			catch (Exception ex)
 			{
@@ -235,19 +237,18 @@ namespace RepositoriesImplementations
 			FileStream fileStream = new(
 				$"IsolatedStorage/users/{ownerId}.txt",
 				FileMode.Open,
-				FileAccess.Write
+				FileAccess.Read
 			);
 			StreamReader streamReader = new(fileStream);
 
 			while (streamReader.ReadLine() != "N")
 				;
-			while (streamReader.ReadLine() != "N")
-			{
-				string? noteId = streamReader.ReadLine();
+			string? noteId;
+			while ((noteId = streamReader.ReadLine()) != "N")
 				if (noteId != null)
 					noteList.Add(GetNote(Guid.Parse(noteId))!);
-			}
 
+			fileStream.Close();
 			return noteList;
 		}
 

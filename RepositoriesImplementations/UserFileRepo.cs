@@ -101,9 +101,7 @@ namespace RepositoriesImplementations
 		public void Delete(Guid guid)
 		{
 			string fileToDelete = $"IsolatedStorage/users/{guid}.txt";
-			if (File.Exists(fileToDelete))
-				File.Delete(fileToDelete);
-			else
+			if (File.Exists(fileToDelete) == false)
 			{
 				Log.Logger.Error($"UserDelete: Файл users/{guid}.txt не найден.");
 				throw new UserDeleteException($"Пользователь с идентификатором {guid} не найден.");
@@ -121,9 +119,8 @@ namespace RepositoriesImplementations
 
 			while (streamReader.ReadLine() != "A")
 				;
-			while (streamReader.ReadLine() != "A")
-			{
-				string? alarmClockId = streamReader.ReadLine();
+			string? alarmClockId;
+			while ((alarmClockId = streamReader.ReadLine()) != "A")
 				if (alarmClockId != null)
 				{
 					try
@@ -139,15 +136,12 @@ namespace RepositoriesImplementations
 						);
 					}
 					Log.Logger.Information($"UserDeleteData: Будильник {alarmClockId} пользователя {guid} удалён.");
-
 				}
-			}
 
 			while (streamReader.ReadLine() != "N")
 				;
-			while (streamReader.ReadLine() != "N")
-			{
-				string? noteId = streamReader.ReadLine();
+			string? noteId;
+			while ((noteId = streamReader.ReadLine()) != "N")
 				if (noteId != null)
 				{
 					string fileToDelete = $"IsolatedStorage/notes/{noteId}.txt";
@@ -157,7 +151,7 @@ namespace RepositoriesImplementations
 						Log.Logger.Information($"UserDeleteData: Заметка {noteId} пользователя {guid} удалён.");
 					}
 				}
-			}
+			fileStream.Close();
 		}
 
 		public User Edit(User user)
@@ -218,7 +212,7 @@ namespace RepositoriesImplementations
 				isoStream = new(
 					$"IsolatedStorage/users/{guid}.txt",
 					FileMode.Open,
-					FileAccess.Write
+					FileAccess.Read
 				);
 			}
 			catch (Exception ex)
@@ -233,7 +227,7 @@ namespace RepositoriesImplementations
 
 			string? userName;
 			string? userPassword;
-			using (var readerStream = new StreamReader(isoStream))
+			using (StreamReader readerStream = new(isoStream))
 			{
 				userName = readerStream.ReadLine();
 				userPassword = readerStream.ReadLine();
@@ -243,6 +237,7 @@ namespace RepositoriesImplementations
 					throw new ArgumentNullException();
 				}
 			}
+			isoStream.Close();
 
 			List<AlarmClock> userAlarmClocks = GetUserAlarmClocks(guid);
 			List<Note> userNotes = GetUserNotes(guid);
@@ -261,7 +256,7 @@ namespace RepositoriesImplementations
 			IEnumerable<string> filelist;
 			try
 			{
-				filelist = Directory.EnumerateDirectories("IsolatedStorage/users");
+				filelist = Directory.EnumerateFiles("IsolatedStorage/users/");
 			}
 			catch (Exception ex)
 			{
@@ -275,7 +270,11 @@ namespace RepositoriesImplementations
 			List<User> usersList = new();
 			foreach (string fileName in filelist)
 			{
-				var user = GetUser(Guid.Parse(fileName.Replace("IsolatedStorage/users/", "")));
+				var user = GetUser(Guid.Parse(
+					fileName
+						.Replace("IsolatedStorage/users/", "")
+						.Replace(".txt", "")
+				));
 				usersList.Add(user!);
 			}
 
@@ -299,7 +298,7 @@ namespace RepositoriesImplementations
 				isoStream = new(
 					$"IsolatedStorage/notes/{guid}.txt",
 					FileMode.Open,
-					FileAccess.Write
+					FileAccess.Read
 				);
 			}
 			catch (Exception ex)
@@ -312,9 +311,9 @@ namespace RepositoriesImplementations
 			}
 
 			using var readerStream = new StreamReader(isoStream);
+			string? noteOwnerId = readerStream.ReadLine();
 			string? noteCreationTime = readerStream.ReadLine();
 			string? noteBody = readerStream.ReadLine();
-			string? noteOwnerId = readerStream.ReadLine();
 			string? noteIsTemporal = readerStream.ReadLine();
 			if (noteCreationTime == null || noteBody == null || noteIsTemporal == null || noteOwnerId == null)
 			{
@@ -322,6 +321,7 @@ namespace RepositoriesImplementations
 				throw new ArgumentNullException();
 			}
 
+			isoStream.Close();
 			return new Note(
 				guid,
 				DateTime.Parse(noteCreationTime),
@@ -337,22 +337,21 @@ namespace RepositoriesImplementations
 			FileStream fileStream = new(
 				$"IsolatedStorage/users/{ownerId}.txt",
 				FileMode.Open,
-				FileAccess.Write
+				FileAccess.Read
 			);
 			StreamReader streamReader = new(fileStream);
 
 			while (streamReader.ReadLine() != "N")
 				;
-			while (streamReader.ReadLine() != "N")
-			{
-				string? noteId = streamReader.ReadLine();
+			string? noteId;
+			while ((noteId = streamReader.ReadLine()) != "N")
 				if (noteId != null)
 					noteList.Add(GetUserNote(
-						ownerId,
-						Guid.Parse(noteId)
+						Guid.Parse(noteId),
+						ownerId
 					)!);
-			}
 
+			fileStream.Close();
 			return noteList;
 		}
 
@@ -365,7 +364,7 @@ namespace RepositoriesImplementations
 				isoStream = new(
 					$"IsolatedStorage/alarmclocks/{guid}.txt",
 					FileMode.Open,
-					FileAccess.Write
+					FileAccess.Read
 				);
 			}
 			catch (Exception ex)
@@ -378,9 +377,9 @@ namespace RepositoriesImplementations
 			}
 
 			using var readerStream = new StreamReader(isoStream);
+			string? alarmClockOwnerId = readerStream.ReadLine();
 			string? alarmClockName = readerStream.ReadLine();
 			string? alarmClockTime = readerStream.ReadLine();
-			string? alarmClockOwnerId = readerStream.ReadLine();
 			string? alarmClockColor = readerStream.ReadLine();
 			string? alarmClockWork = readerStream.ReadLine();
 			if (alarmClockName == null || alarmClockTime == null || alarmClockColor == null || alarmClockWork == null || alarmClockOwnerId == null)
@@ -389,6 +388,7 @@ namespace RepositoriesImplementations
 				throw new ArgumentNullException();
 			}
 
+			isoStream.Close();
 			if (Guid.Parse(alarmClockOwnerId) == ownerId)
 				return new AlarmClock(
 					guid,
@@ -408,22 +408,21 @@ namespace RepositoriesImplementations
 			FileStream fileStream = new(
 				$"IsolatedStorage/users/{ownerId}.txt",
 				FileMode.Open,
-				FileAccess.Write
+				FileAccess.Read
 			);
 			StreamReader streamReader = new(fileStream);
 
 			while (streamReader.ReadLine() != "A")
 				;
-			while (streamReader.ReadLine() != "A")
-			{
-				string? alarmClockId = streamReader.ReadLine();
+			string? alarmClockId;
+			while ((alarmClockId = streamReader.ReadLine()) != "A")
 				if (alarmClockId != null)
 					alarmClockList.Add(GetUserAlarmClock(
-						ownerId,
-						Guid.Parse(alarmClockId)!
+						Guid.Parse(alarmClockId)!,
+						ownerId
 					)!);
-			}
 
+			fileStream.Close();
 			return alarmClockList;
 		}
 	}
