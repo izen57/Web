@@ -18,7 +18,7 @@ namespace RepositoriesImplementations
 		{
 			try
 			{
-				_isoStore = new DirectoryInfo("../IsolatedStorage");
+				_isoStore = new DirectoryInfo("IsolatedStorage");
 				string f = _isoStore.FullName;
 				_isoStore.CreateSubdirectory("alarmclocks");
 			}
@@ -34,7 +34,7 @@ namespace RepositoriesImplementations
 
 		public AlarmClock Create(AlarmClock alarmClock)
 		{
-			string alarmClockFilePath = $"../IsolatedStorage/alarmclocks/{alarmClock.Id}.txt";
+			string alarmClockFilePath = $"IsolatedStorage/alarmclocks/{alarmClock.Id}.txt";
 
 			if (File.Exists(alarmClockFilePath))
 			{
@@ -63,13 +63,13 @@ namespace RepositoriesImplementations
 			{
 				writer.WriteLine(alarmClock.OwnerId);
 				writer.WriteLine(alarmClock.Name);
-				writer.WriteLine(alarmClock.AlarmTime);
+				writer.WriteLine($"{alarmClock.AlarmTime:yyyy-MM-dd HH:mm:ss}");
 				writer.WriteLine(alarmClock.AlarmClockColor.Name);
 				writer.WriteLine(alarmClock.IsWorking);
 			}
 			isoStream.Close();
 
-			string userFilePath = $"../IsolatedStorage/users/{alarmClock.OwnerId}.txt";
+			string userFilePath = $"IsolatedStorage/users/{alarmClock.OwnerId}.txt";
 			try
 			{
 				List<string> previousUserLines = File.ReadAllLines(userFilePath).ToList();
@@ -102,7 +102,7 @@ namespace RepositoriesImplementations
 			try
 			{
 				isoStream = new(
-					$"../IsolatedStorage/alarmclocks/{alarmClock.Id}.txt",
+					$"IsolatedStorage/alarmclocks/{alarmClock.Id}.txt",
 					FileMode.Create,
 					FileAccess.Write
 				);
@@ -120,7 +120,7 @@ namespace RepositoriesImplementations
 			{
 				writer.WriteLine(alarmClock.OwnerId);
 				writer.WriteLine(alarmClock.Name);
-				writer.WriteLine(alarmClock.AlarmTime);
+				writer.WriteLine($"{alarmClock.AlarmTime:yyyy-MM-dd HH:mm:ss}");
 				writer.WriteLine(alarmClock.AlarmClockColor.Name);
 				writer.WriteLine(alarmClock.IsWorking);
 			}
@@ -139,7 +139,7 @@ namespace RepositoriesImplementations
 
 		public void Delete(Guid guid, Guid ownerId)
 		{
-			string alarmClockFilePath = $"../IsolatedStorage/alarmclocks/{guid}.txt";
+			string alarmClockFilePath = $"IsolatedStorage/alarmclocks/{guid}.txt";
 			if (File.Exists(alarmClockFilePath) == false)
 			{
 				Log.Logger.Error($"AlarmClockDelete: Файл alarmclocks/{guid}.txt не найден.");
@@ -149,7 +149,7 @@ namespace RepositoriesImplementations
 				);
 			}
 
-			string userFilePath = $"../IsolatedStorage/users/{ownerId}.txt";
+			string userFilePath = $"IsolatedStorage/users/{ownerId}.txt";
 			try
 			{
 				List<string> previousUserLines = File.ReadAllLines(userFilePath).ToList();
@@ -176,7 +176,7 @@ namespace RepositoriesImplementations
 			try
 			{
 				isoStream = new(
-					$"../IsolatedStorage/alarmclocks/{guid}.txt",
+					$"IsolatedStorage/alarmclocks/{guid}.txt",
 					FileMode.Open,
 					FileAccess.Read
 				);
@@ -220,7 +220,7 @@ namespace RepositoriesImplementations
 			List<AlarmClock> alarmClockList = new();
 			try
 			{
-				filelist = Directory.EnumerateFiles("../IsolatedStorage/alarmclocks/");
+				filelist = Directory.EnumerateFiles("IsolatedStorage/alarmclocks/");
 			}
 			catch (Exception ex)
 			{
@@ -232,7 +232,7 @@ namespace RepositoriesImplementations
 			{
 				var alarmClock = GetAlarmClock(Guid.Parse(
 					fileName
-						.Replace("../IsolatedStorage/alarmclocks/", "")
+						.Replace("IsolatedStorage/alarmclocks/", "")
 						.Replace(".txt", "")
 				));
 				alarmClockList.Add(alarmClock!);
@@ -245,7 +245,7 @@ namespace RepositoriesImplementations
 		{
 			List<AlarmClock> alarmClockList = new();
 			FileStream fileStream = new(
-				$"../IsolatedStorage/users/{ownerId}.txt",
+				$"IsolatedStorage/users/{ownerId}.txt",
 				FileMode.Open,
 				FileAccess.Read
 			);
