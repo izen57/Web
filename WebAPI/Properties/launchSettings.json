@@ -20,7 +20,7 @@
     "Docker": {
       "commandName": "Docker",
       "launchBrowser": true,
-      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/api/v1/",
       "environmentVariables": {
         "ASPNETCORE_URLS": "http://+:80"
       },

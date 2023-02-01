@@ -6,9 +6,6 @@ services:
     environment: &env
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80;
-      - SWAGGER_ROUTETEMPLATE=api/v1/{documentname}/swagger.json
-      - SWAGGER_ROUTEPREFIX=api/v1
-      - SWAGGER_SWAGGERENDPOINT=/api/v1/0.1.0/swagger.json
     build:
       context: .
       dockerfile: WebAPI/Dockerfile
@@ -20,9 +17,6 @@ services:
     environment:
      - ASPNETCORE_ENVIRONMENT=Development
      - ASPNETCORE_URLS=http://+:81;
-     - SWAGGER_ROUTETEMPLATE=api/v1/{documentname}/swagger.json
-     - SWAGGER_ROUTEPREFIX=api/v1
-     - SWAGGER_SWAGGERENDPOINT=/api/v1/0.1.0/swagger.json
     ports:
      - "81"
     volumes:
@@ -33,9 +27,6 @@ services:
     environment:
      - ASPNETCORE_ENVIRONMENT=Development
      - ASPNETCORE_URLS=http://+:82;
-     - SWAGGER_ROUTETEMPLATE=api/v1/{documentname}/swagger.json
-     - SWAGGER_ROUTEPREFIX=api/v1
-     - SWAGGER_SWAGGERENDPOINT=/api/v1/0.1.0/swagger.json
     ports:
      - "82"
     volumes:
@@ -47,9 +38,6 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:83;
-      - SWAGGER_ROUTETEMPLATE=mirror/api/v1/{documentname}/swagger.json
-      - SWAGGER_ROUTEPREFIX=mirror/api/v1
-      - SWAGGER_SWAGGERENDPOINT=/mirror/api/v1/0.1.0/swagger.json
     ports:
      - "83"
     build:

@@ -85,14 +85,6 @@ namespace IO.Swagger
 				.AddSingleton<IAlarmClockRepo, AlarmClockFileRepo>()
 				.AddSingleton<INoteRepo, NoteFileRepo>()
 				.AddSingleton<IUserRepo, UserFileRepo>()
-				//.AddSingleton(new Stopwatch(
-				//	"Секундомер",
-				//	System.Drawing.Color.White,
-				//	new System.Diagnostics.Stopwatch(),
-				//	new SortedSet<DateTime>(),
-				//	false/*,
-				//	Guid.Parse(services.*//*httpContextAccessor.HttpContext.Items["User ID"].ToString()*//*)*/
-				//))
 				.AddSingleton<Dictionary<Guid, Stopwatch>>()
 				.AddSingleton<IAlarmClockService, AlarmClockService>()
 				.AddSingleton<INoteService, NoteService>()
@@ -146,20 +138,18 @@ namespace IO.Swagger
 		/// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 		/// </summary>
 		/// <param name="app"></param>
-		/// <param name="env"></param>
-		/// <param name="loggerFactory"></param>
-		public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor)
+		public void Configure(IApplicationBuilder app)
 		{
 			app
 				.UseStaticFiles()
 				.UseRouting()
 				.UseAuthentication()
 				.UseAuthorization()
-				.UseSwagger()
-				.UseSwaggerUI(c =>
+				.UseSwagger(option => option.RouteTemplate = "api/v1/{documentname}/swagger.json")
+				.UseSwaggerUI(option =>
 				{
-					c.RoutePrefix = "api/v1";
-					c.SwaggerEndpoint("/swagger/0.1.0/swagger.json", "NotStopAlarm");
+					option.RoutePrefix = "api/v1";
+					option.SwaggerEndpoint("/api/v1/0.1.0/swagger.json", "NotStopAlarm");
 				})
 				.UseMiddleware<JWTMiddleware>()
 				.UseEndpoints(endpoints => endpoints.MapControllers())
