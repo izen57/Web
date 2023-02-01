@@ -90,9 +90,10 @@ namespace IO.Swagger
 				//	System.Drawing.Color.White,
 				//	new System.Diagnostics.Stopwatch(),
 				//	new SortedSet<DateTime>(),
-				//	false
+				//	false/*,
+				//	Guid.Parse(services.*//*httpContextAccessor.HttpContext.Items["User ID"].ToString()*//*)*/
 				//))
-				.AddSingleton<Stopwatch>()
+				.AddSingleton<Dictionary<Guid, Stopwatch>>()
 				.AddSingleton<IAlarmClockService, AlarmClockService>()
 				.AddSingleton<INoteService, NoteService>()
 				.AddSingleton<IStopwatchService, StopwatchService>()
@@ -147,7 +148,7 @@ namespace IO.Swagger
 		/// <param name="app"></param>
 		/// <param name="env"></param>
 		/// <param name="loggerFactory"></param>
-		public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor)
 		{
 			app
 				.UseStaticFiles()

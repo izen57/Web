@@ -7,7 +7,6 @@ using Repositories;
 using Serilog;
 
 using System.Drawing;
-using System.Net.Security;
 
 namespace RepositoriesImplementations
 {

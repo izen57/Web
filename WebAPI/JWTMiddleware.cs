@@ -14,10 +14,12 @@ namespace WebAPI
 	public class JWTMiddleware
 	{
 		readonly RequestDelegate _next;
+		readonly IServiceProvider _services;
 
-		public JWTMiddleware(RequestDelegate next)
+		public JWTMiddleware(RequestDelegate next, IServiceProvider services)
 		{
 			_next = next;
+			_services = services;
 		}
 
 		public async Task InvokeAsync(HttpContext context)
@@ -56,6 +58,13 @@ namespace WebAPI
 				Log.Logger.Information($"from JWT: {userId}.");
 
 				context.Items["User ID"] = userId;
+				_services.GetService<Dictionary<Guid, Stopwatch>>().TryAdd(userId, new Stopwatch(
+					"Секундомер",
+					System.Drawing.Color.White,
+					new System.Diagnostics.Stopwatch(),
+					new SortedSet<DateTime>(),
+					false
+				));
 			}
 			catch
 			{

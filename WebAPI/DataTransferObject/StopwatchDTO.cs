@@ -12,7 +12,7 @@ namespace WebAPI.DataTransferObject
 		public SortedSet<DateTime>? TimeFlags { get; set; } = null;
 		public bool? IsWorking { get; set; } = null;
 		public bool? ResetSignal { get; set; } = null;
-		
+
 		public StopwatchDTO() { }
 
 		public StopwatchDTO(string? name, string? stopwatchColor, System.Diagnostics.Stopwatch? timing, SortedSet<DateTime>? timeFlags, bool? isWorking)

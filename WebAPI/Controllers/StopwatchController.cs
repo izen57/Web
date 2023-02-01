@@ -37,7 +37,9 @@ namespace WebAPI.Controllers
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		public ActionResult GetStopwatch()
 		{
-			return new OkObjectResult(StopwatchDTO.ToDTO(_stopwatchService.Get()));
+			Guid userFromResponse = Guid.Parse(HttpContext.Items["User ID"].ToString());
+
+			return new OkObjectResult(StopwatchDTO.ToDTO(_stopwatchService.Get(userFromResponse)));
 		}
 
 		/// <summary>
@@ -57,29 +59,31 @@ namespace WebAPI.Controllers
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public ActionResult StopwatchAction([FromBody] StopwatchDTO stopwatchDTO)
 		{
+			Guid userFromResponse = Guid.Parse(HttpContext.Items["User ID"].ToString());
+
 			try
 			{
 				if (stopwatchDTO.Name != null)
-					_stopwatchService.EditName(stopwatchDTO.Name);
+					_stopwatchService.EditName(userFromResponse, stopwatchDTO.Name);
 
 				if (stopwatchDTO.StopwatchColor != null)
-					_stopwatchService.EditColor(Color.FromName(stopwatchDTO.StopwatchColor));
+					_stopwatchService.EditColor(userFromResponse, Color.FromName(stopwatchDTO.StopwatchColor));
 
 				if (stopwatchDTO.IsWorking == true)
-					_stopwatchService.Set();
+					_stopwatchService.Set(userFromResponse);
 				else if (stopwatchDTO.IsWorking == false)
-					_stopwatchService.Stop();
+					_stopwatchService.Stop(userFromResponse);
 
 				if (stopwatchDTO.ResetSignal == true)
-					_stopwatchService.Reset();
+					_stopwatchService.Reset(userFromResponse);
 				if (stopwatchDTO.TimeFlags != null)
-					_stopwatchService.AddStopwatchFlag();
+					_stopwatchService.AddStopwatchFlag(userFromResponse);
 			}
 			catch (Exception e) when (e.Message.Contains("Read-only file system"))
 			{
 				return StatusCode(403);
 			}
-			return new OkObjectResult(StopwatchDTO.ToDTO(_stopwatchService.Get()));
+			return new OkObjectResult(StopwatchDTO.ToDTO(_stopwatchService.Get(userFromResponse)));
 		}
 	}
 }

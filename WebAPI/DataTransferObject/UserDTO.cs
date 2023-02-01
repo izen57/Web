@@ -9,17 +9,19 @@ namespace WebAPI.DataTransferObject
 		public string Password { get; set; }
 		public List<AlarmClockDTO> UserAlarmClocks { get; private set; }
 		public List<NoteDTO> UserNotes { get; private set; }
+		//public StopwatchDTO UserStopwatch { get; private set; }
 
-		public UserDTO(Guid id, string name, string password, List<AlarmClockDTO> userAlarmClocks, List<NoteDTO> userNotes)
+		public UserDTO(Guid id, string name, string password, List<AlarmClockDTO> userAlarmClocks, List<NoteDTO> userNotes/*, StopwatchDTO userStopwatch*/)
 		{
 			Id = id;
 			Name = name;
 			Password = password;
 			UserAlarmClocks = userAlarmClocks;
 			UserNotes = userNotes;
+			//UserStopwatch = userStopwatch;
 		}
 
-		public static UserDTO ToDTO(User user)
+		public static UserDTO ToDTO(User user/*, Stopwatch stopwatch*/)
 		{
 			List<AlarmClockDTO> alarmClockDTOs = new();
 			foreach (AlarmClock alarmClock in user.UserAlarmClocks)
@@ -29,12 +31,15 @@ namespace WebAPI.DataTransferObject
 			foreach (Note note in user.UserNotes)
 				noteDTOs.Add(NoteDTO.ToDTO(note));
 
+			//StopwatchDTO stopwatchDTO = StopwatchDTO.ToDTO(stopwatch);
+
 			return new UserDTO(
 				user.Id,
 				user.Name,
 				user.Password,
 				alarmClockDTOs,
-				noteDTOs
+				noteDTOs/*,
+				stopwatchDTO*/
 			);
 		}
 
