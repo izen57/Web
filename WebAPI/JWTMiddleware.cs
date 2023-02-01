@@ -1,5 +1,6 @@
 ﻿using IO.Swagger;
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.IdentityModel.Tokens;
 
 using Model;

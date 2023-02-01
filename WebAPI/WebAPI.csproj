@@ -22,6 +22,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="For SSL\**" />
+    <Compile Remove="IsolatedStorage\**" />
+    <Content Remove="For SSL\**" />
+    <Content Remove="IsolatedStorage\**" />
+    <EmbeddedResource Remove="For SSL\**" />
+    <EmbeddedResource Remove="IsolatedStorage\**" />
+    <None Remove="For SSL\**" />
+    <None Remove="IsolatedStorage\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.2" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />

@@ -64,6 +64,7 @@ namespace IO.Swagger
 			services
 				.AddControllers()
 				.AddNewtonsoftJson();
+			services.AddCors();
 
 			services
 				.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -145,6 +146,10 @@ namespace IO.Swagger
 				.UseRouting()
 				.UseAuthentication()
 				.UseAuthorization()
+				.UseCors(x => x
+				.AllowAnyOrigin()
+				.AllowAnyMethod()
+				.AllowAnyHeader())
 				.UseSwagger(option => option.RouteTemplate = "api/v1/{documentname}/swagger.json")
 				.UseSwaggerUI(option =>
 				{
@@ -153,6 +158,7 @@ namespace IO.Swagger
 				})
 				.UseMiddleware<JWTMiddleware>()
 				.UseEndpoints(endpoints => endpoints.MapControllers())
+				.UseHttpsRedirection()
 				.UseDeveloperExceptionPage();
 		}
 	}

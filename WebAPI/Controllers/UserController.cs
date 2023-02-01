@@ -68,7 +68,7 @@ namespace WebAPI.Controllers
 		/// <respons code="200">Пользователь успешно аутентифицирован</respons>
 		/// <respons code="404">Пользователь не найден</respons>
 		/// <respons code="500">Ошибка аутентификации пользователя</respons>
-		[HttpPost("authenticate")]
+		[HttpGet("authenticate")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserDTOResponse))]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]

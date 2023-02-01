@@ -15,25 +15,25 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:5000"
+      "applicationUrl": "https://localhost:5000"
     },
     "Docker": {
       "commandName": "Docker",
       "launchBrowser": true,
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/api/v1/",
       "environmentVariables": {
-        "ASPNETCORE_URLS": "http://+:80"
+        "ASPNETCORE_URLS": "https://localhost:441"
       },
       "publishAllPorts": true,
-      "useSSL": false
+      "useSSL": true
     }
   },
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:50352/",
-      "sslPort": 0
+      "applicationUrl": "https://localhost:50352/",
+      "sslPort": 443
     }
   }
 }

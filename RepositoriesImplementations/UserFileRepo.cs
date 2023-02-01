@@ -20,7 +20,7 @@ namespace RepositoriesImplementations
 		{
 			try
 			{
-				_isoStore = new DirectoryInfo("IsolatedStorage");
+				_isoStore = new DirectoryInfo("../IsolatedStorage");
 				_isoStore.CreateSubdirectory("users");
 			}
 			catch (Exception ex)
@@ -46,7 +46,7 @@ namespace RepositoriesImplementations
 				);
 			}
 
-			if (File.Exists($"IsolatedStorage/users/{user.Id}.txt"))
+			if (File.Exists($"../IsolatedStorage/users/{user.Id}.txt"))
 			{
 				Log.Logger.Error($"UserCreate: Файл users/{user.Id}.txt нельзя открыть.");
 				throw new UserCreateException(
@@ -58,7 +58,7 @@ namespace RepositoriesImplementations
 			FileStream isoStream;
 			try
 			{
-				isoStream = File.Create($"IsolatedStorage/users/{user.Id}.txt");
+				isoStream = File.Create($"../IsolatedStorage/users/{user.Id}.txt");
 			}
 			catch (Exception ex)
 			{
@@ -100,7 +100,7 @@ namespace RepositoriesImplementations
 
 		public void Delete(Guid guid)
 		{
-			string fileToDelete = $"IsolatedStorage/users/{guid}.txt";
+			string fileToDelete = $"../IsolatedStorage/users/{guid}.txt";
 			if (File.Exists(fileToDelete) == false)
 			{
 				Log.Logger.Error($"UserDelete: Файл users/{guid}.txt не найден.");
@@ -114,7 +114,7 @@ namespace RepositoriesImplementations
 
 		void DeleteUserData(Guid guid)
 		{
-			FileStream fileStream = new($"IsolatedStorage/users/{guid}.txt", FileMode.Open, FileAccess.Read);
+			FileStream fileStream = new($"../IsolatedStorage/users/{guid}.txt", FileMode.Open, FileAccess.Read);
 			StreamReader streamReader = new(fileStream);
 
 			while (streamReader.ReadLine() != "A")
@@ -125,7 +125,7 @@ namespace RepositoriesImplementations
 				{
 					try
 					{
-						File.Delete($"IsolatedStorage/alarmclocks/{alarmClockId}.txt");
+						File.Delete($"../IsolatedStorage/alarmclocks/{alarmClockId}.txt");
 					}
 					catch (Exception ex)
 					{
@@ -144,7 +144,7 @@ namespace RepositoriesImplementations
 			while ((noteId = streamReader.ReadLine()) != "N")
 				if (noteId != null)
 				{
-					string fileToDelete = $"IsolatedStorage/notes/{noteId}.txt";
+					string fileToDelete = $"../IsolatedStorage/notes/{noteId}.txt";
 					if (File.Exists(fileToDelete))
 					{
 						File.Delete(fileToDelete);
@@ -160,7 +160,7 @@ namespace RepositoriesImplementations
 			try
 			{
 				isoStream = new(
-					$"IsolatedStorage/users/{user.Id}.txt",
+					$"../IsolatedStorage/users/{user.Id}.txt",
 					FileMode.Create,
 					FileAccess.Write
 				);
@@ -210,7 +210,7 @@ namespace RepositoriesImplementations
 			try
 			{
 				isoStream = new(
-					$"IsolatedStorage/users/{guid}.txt",
+					$"../IsolatedStorage/users/{guid}.txt",
 					FileMode.Open,
 					FileAccess.Read
 				);
@@ -256,7 +256,7 @@ namespace RepositoriesImplementations
 			IEnumerable<string> filelist;
 			try
 			{
-				filelist = Directory.EnumerateFiles("IsolatedStorage/users/");
+				filelist = Directory.EnumerateFiles("../IsolatedStorage/users/");
 			}
 			catch (Exception ex)
 			{
@@ -272,7 +272,7 @@ namespace RepositoriesImplementations
 			{
 				var user = GetUser(Guid.Parse(
 					fileName
-						.Replace("IsolatedStorage/users/", "")
+						.Replace("../IsolatedStorage/users/", "")
 						.Replace(".txt", "")
 				));
 				usersList.Add(user!);
@@ -296,7 +296,7 @@ namespace RepositoriesImplementations
 			try
 			{
 				isoStream = new(
-					$"IsolatedStorage/notes/{guid}.txt",
+					$"../IsolatedStorage/notes/{guid}.txt",
 					FileMode.Open,
 					FileAccess.Read
 				);
@@ -335,7 +335,7 @@ namespace RepositoriesImplementations
 		{
 			List<Note> noteList = new();
 			FileStream fileStream = new(
-				$"IsolatedStorage/users/{ownerId}.txt",
+				$"../IsolatedStorage/users/{ownerId}.txt",
 				FileMode.Open,
 				FileAccess.Read
 			);
@@ -362,7 +362,7 @@ namespace RepositoriesImplementations
 			try
 			{
 				isoStream = new(
-					$"IsolatedStorage/alarmclocks/{guid}.txt",
+					$"../IsolatedStorage/alarmclocks/{guid}.txt",
 					FileMode.Open,
 					FileAccess.Read
 				);
@@ -406,7 +406,7 @@ namespace RepositoriesImplementations
 		{
 			List<AlarmClock> alarmClockList = new();
 			FileStream fileStream = new(
-				$"IsolatedStorage/users/{ownerId}.txt",
+				$"../IsolatedStorage/users/{ownerId}.txt",
 				FileMode.Open,
 				FileAccess.Read
 			);
