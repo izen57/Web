@@ -9,6 +9,7 @@
     <UserSecretsId>c46acc54-8043-47a8-85d9-b4a3f32ee56d</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 	<EnableWindowsTargeting>True</EnableWindowsTargeting>
+	<EnablePreviewFeatures>true</EnablePreviewFeatures>
 	<DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 

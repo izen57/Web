@@ -76,8 +76,6 @@ namespace WebAPI
 		public static string GenerateJwtToken(User user)
 		{
 			SecurityToken token = new JwtSecurityToken(
-				issuer: AuthOptions.ISSUER,
-				audience: AuthOptions.AUDIENCE,
 				claims: new List<Claim> { new Claim("id", user.Id.ToString()) },
 				expires: DateTime.UtcNow.AddDays(7),
 				signingCredentials: new SigningCredentials(

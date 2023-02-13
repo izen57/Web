@@ -3,14 +3,14 @@ version: '3.4'
 services:
   webapi: &conf
     image: ${DOCKER_REGISTRY-}webapi
-    environment: &env
+    environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:441;
+      - ASPNETCORE_URLS=https://+:440;
     build:
       context: .
       dockerfile: WebAPI/Dockerfile
     ports:
-     - "441:441"
+     - "440:440"
     volumes:
      - ./WebAPI/IsolatedStorage:/app/IsolatedStorage
 
@@ -28,9 +28,9 @@ services:
     <<: *conf
     environment:
      - ASPNETCORE_ENVIRONMENT=Development
-     - ASPNETCORE_URLS=https://+:443;
+     - ASPNETCORE_URLS=https://+:441;
     ports:
-     - "443:443"
+     - "441:441"
     volumes:
      - ./WebAPI/IsolatedStorage:/app/IsolatedStorage:ro
 
@@ -52,13 +52,17 @@ services:
      - webapi2
      - webapi3
      - mirror
-    image: byjg/nginx-extras
+    #image: byjg/nginx-extras
+    image: macbre/nginx-http3:1.23.1
     ports:
-     - "440:440"
+      - "443:443/tcp"
+      - "443:443/udp"
+      - "80:80/tcp"
+      - "80:80/udp"
     volumes:
-     - ./WebAPI/server/default.conf:/etc/nginx/conf.d/default.conf:ro
+     - ./WebAPI/server/nginx.conf:/etc/nginx/nginx.conf
      - ./WebAPI/wwwroot:/home/static:ro
-     - ./WebAPI/For SSL/cert.pem:/etc/nginx/ssl/cert.pem:ro
+     - ./WebAPI/For SSL/cert.crt:/etc/nginx/ssl/cert.crt:ro
      - ./WebAPI/For SSL/private.key:/etc/nginx/ssl/private.key:ro
 
 networks:

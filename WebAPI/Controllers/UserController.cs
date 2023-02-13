@@ -32,7 +32,7 @@ namespace WebAPI.Controllers
 		/// <respons code="401">Такой пользователь уже существует</respons>
 		/// <respons code="403">У Вас нет прав доступа</respons>
 		/// <respons code="500">Ошибка создания пользователя</respons>
-		[HttpPost("register")]
+		[HttpPut("register")]
 		[ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserDTO))]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -142,10 +142,9 @@ namespace WebAPI.Controllers
 		}
 
 		/// <summary>
-		/// Изменяет существующего пользователя
+		/// Изменяет текущего пользователя
 		/// </summary>
 		/// <param name="userDTOCreate">Изменяемый пользователь</param>
-		/// <param name="Id">Идентификатор пользователя</param>
 		/// <returns>Изменённый пользователь</returns>
 		/// <respons code="200">Существующий пользователь успешно изменён</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
@@ -153,15 +152,15 @@ namespace WebAPI.Controllers
 		/// <respons code="403">У Вас нет прав доступа</respons>
 		/// <respons code="404">Пользователь не найден</respons>
 		[Authorize]
-		[HttpPut("{Id}")]
+		[HttpPut("")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserDTO))]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public ActionResult EditUser([FromBody] UserDTOCreate userDTOCreate, [FromRoute] Guid Id)
+		public ActionResult EditUser([FromBody] UserDTOCreate userDTOCreate)
 		{
-			User? user = _userService.GetUser(Id);
+			User? user = _userService.GetUser(Guid.Parse(HttpContext.Items["User ID"].ToString()));
 			if (user == null)
 				return new NotFoundResult();
 			user.Name = userDTOCreate.Name;
@@ -183,26 +182,25 @@ namespace WebAPI.Controllers
 		}
 
 		/// <summary>
-		/// Удаляет пользователя и все его данные по идентификатору
+		/// Удаляет текущего пользователя и все его данные по идентификатору
 		/// </summary>
-		/// <param name="Id">Идентификатор пользователя</param>
 		/// <respons code="200">Пользователь успешно удалён</respons>
 		/// <respons code="400">Ошибка синтаксиса</respons>
 		/// <respons code="401">Необходима авторизация</respons>
 		/// <respons code="403">Недостаточно прав</respons>
 		/// <respons code="404">Пользователь не найден</respons>
 		[Authorize]
-		[HttpDelete("{Id}")]
+		[HttpDelete("")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public ActionResult DeleteUser([FromRoute] Guid Id)
+		public ActionResult DeleteUser()
 		{
 			try
 			{
-				_userService.Delete(Id);
+				_userService.Delete(Guid.Parse(HttpContext.Items["User ID"].ToString()));
 			}
 			catch (UserDeleteException e) when (e.InnerException.Message.Contains("Read-only file system"))
 			{

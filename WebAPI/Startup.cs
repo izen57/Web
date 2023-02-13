@@ -71,10 +71,8 @@ namespace IO.Swagger
 				.AddJwtBearer(options => 
 					options.TokenValidationParameters = new TokenValidationParameters
 					{
-						ValidateIssuer = true,
-						ValidIssuer = AuthOptions.ISSUER,
-						ValidateAudience = true,
-						ValidAudience = AuthOptions.AUDIENCE,
+						ValidateIssuer = false,
+						ValidateAudience = false,
 						ValidateLifetime = true,
 						IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
 						ValidateIssuerSigningKey = true,

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace IO.Swagger
 {
@@ -24,6 +25,8 @@ namespace IO.Swagger
 		public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
 			WebHost
 				.CreateDefaultBuilder(args)
+				.UseKestrel()
+				.UseQuic()
 				.UseStartup<Startup>();
 	}
 }
