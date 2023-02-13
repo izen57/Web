@@ -1,67 +1,67 @@
 ﻿using Model;
 
 using Serilog;
+
 using System.Drawing;
 
 namespace Logic
 {
 	public class StopwatchService: IStopwatchService
 	{
-		static Stopwatch _stopwatch;
+		static Dictionary<Guid, Stopwatch> _stopwatches;
 
-		public StopwatchService(Stopwatch stopwatch)
+		public StopwatchService(Dictionary<Guid, Stopwatch> stopwatches)
 		{
-			_stopwatch = stopwatch;
+			_stopwatches = stopwatches;
 		}
 
-		public void EditName(string name)
+		public void EditName(Guid ownerId, string name)
 		{
-			_stopwatch.Name = name;
+			_stopwatches[ownerId].Name = name;
 		}
 
-		public void Set()
+		public void Set(Guid ownerId)
 		{
-			_stopwatch.Timing.Start();
-			_stopwatch.IsWorking = true;
+			_stopwatches[ownerId].Timing.Start();
+			_stopwatches[ownerId].IsWorking = true;
 
-			Log.Logger.Information("Секундомер запущен.");
+			Log.Logger.Information($"Секундомер пользователя {ownerId} запущен.");
 		}
 
-		public long Stop()
+		public long Stop(Guid ownerId)
 		{
-			_stopwatch.Timing.Stop();
-			_stopwatch.IsWorking = false;
+			_stopwatches[ownerId].Timing.Stop();
+			_stopwatches[ownerId].IsWorking = false;
 
-			Log.Logger.Information("Секундомер остановлен.");
+			Log.Logger.Information($"Секундомер пользователя {ownerId} остановлен.");
 
-			return _stopwatch.Timing.ElapsedMilliseconds;
+			return _stopwatches[ownerId].Timing.ElapsedMilliseconds;
 		}
 
-		public void Reset()
+		public void Reset(Guid ownerId)
 		{
-			_stopwatch.Timing.Reset();
-			_stopwatch.TimeFlags.Clear();
-			_stopwatch.IsWorking = false;
+			_stopwatches[ownerId].Timing.Reset();
+			_stopwatches[ownerId].TimeFlags.Clear();
+			_stopwatches[ownerId].IsWorking = false;
 
-			Log.Logger.Information("Секундомер  и его флаги сброшены.");
+			Log.Logger.Information($"Секундомер пользователя {ownerId} и его флаги сброшены.");
 		}
 
-		public long AddStopwatchFlag()
+		public long AddStopwatchFlag(Guid ownerId)
 		{
-			_stopwatch.TimeFlags.Add(DateTime.Now);
-			return _stopwatch.Timing.ElapsedMilliseconds;
+			_stopwatches[ownerId].TimeFlags.Add(DateTime.Now);
+			return _stopwatches[ownerId].Timing.ElapsedMilliseconds;
 		}
 
-		public Stopwatch Get()
+		public Stopwatch? Get(Guid ownerId)
 		{
-			return _stopwatch;
+			return _stopwatches[ownerId];
 		}
 
-		public void EditColor(Color stopwatchColor)
+		public void EditColor(Guid ownerId, Color stopwatchColor)
 		{
-			_stopwatch.StopwatchColor = stopwatchColor;
-
-			Log.Logger.Information("Цвет секундомера изменён.");
+			_stopwatches[ownerId].StopwatchColor = stopwatchColor;
+			Log.Logger.Information($"Цвет секундомера {ownerId} изменён.");
 		}
 	}
 }

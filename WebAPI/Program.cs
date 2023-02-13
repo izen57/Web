@@ -1,6 +1,5 @@
-using Serilog;
 using Microsoft.AspNetCore;
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace IO.Swagger
 {
@@ -24,7 +23,10 @@ namespace IO.Swagger
 		/// <param name="args"></param>
 		/// <returns>IWebHostBuilder</returns>
 		public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-			WebHost.CreateDefaultBuilder(args)
+			WebHost
+				.CreateDefaultBuilder(args)
+				.UseKestrel()
+				.UseQuic()
 				.UseStartup<Startup>();
 	}
 }

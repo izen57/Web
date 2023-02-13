@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "mirror": "StartDebugging",
+        "nginx": "StartWithoutDebugging",
+        "webapi": "StartDebugging",
+        "webapi2": "StartDebugging",
+        "webapi3": "StartDebugging"
+      }
+    }
+  }
+}

@@ -6,9 +6,9 @@ namespace Logic
 	{
 		Note Create(Note note);
 		Note Edit(Note note);
-		void Delete(Guid id);
-		List<Note> GetAllNotesList();
+		void Delete(Guid id, Guid ownerId);
 		Note? GetNote(Guid guid);
-		List<Note> GetNotesByQuery(QueryStringParameters param);
+		List<Note> GetNotes(Guid ownerId);
+		List<Note> GetNotes(Guid ownerId, QueryStringParameters param);
 	}
 }

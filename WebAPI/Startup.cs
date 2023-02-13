@@ -9,6 +9,8 @@
  */
 using Logic;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 using Model;
@@ -19,6 +21,10 @@ using RepositoriesImplementations;
 
 using Serilog;
 
+using System.Text;
+
+using WebAPI;
+
 namespace IO.Swagger
 {
 	/// <summary>
@@ -26,9 +32,8 @@ namespace IO.Swagger
 	/// </summary>
 	public class Startup
 	{
-		private readonly IWebHostEnvironment _hostingEnv;
-
-		private IConfiguration Configuration { get; }
+		readonly IWebHostEnvironment _hostingEnv;
+		IConfiguration Configuration { get; }
 
 		/// <summary>
 		/// Constructor
@@ -59,25 +64,57 @@ namespace IO.Swagger
 			services
 				.AddControllers()
 				.AddNewtonsoftJson();
+			services.AddCors();
 
 			services
+				.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+				.AddJwtBearer(options => 
+					options.TokenValidationParameters = new TokenValidationParameters
+					{
+						ValidateIssuer = false,
+						ValidateAudience = false,
+						ValidateLifetime = true,
+						IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
+						ValidateIssuerSigningKey = true,
+					}
+				);
+
+			services
+				.AddSingleton<IHttpContextAccessor, HttpContextAccessor>()
 				.AddSingleton<IAlarmClockRepo, AlarmClockFileRepo>()
 				.AddSingleton<INoteRepo, NoteFileRepo>()
-				.AddSingleton(new Stopwatch(
-					"Секундомер",
-					System.Drawing.Color.White,
-					new System.Diagnostics.Stopwatch(),
-					new SortedSet<DateTime>(),
-					false
-				))
+				.AddSingleton<IUserRepo, UserFileRepo>()
+				.AddSingleton<Dictionary<Guid, Stopwatch>>()
 				.AddSingleton<IAlarmClockService, AlarmClockService>()
 				.AddSingleton<INoteService, NoteService>()
-				.AddSingleton<IStopwatchService, StopwatchService>();
+				.AddSingleton<IStopwatchService, StopwatchService>()
+				.AddSingleton<IUserService, UserService>();
 
 			services
-				.AddSwaggerGen(c =>
+				.AddSwaggerGen(setup =>
 				{
-					c.SwaggerDoc("0.1.0", new OpenApiInfo
+					setup.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+					{
+						Name = "Authorization",
+						Type = SecuritySchemeType.ApiKey,
+						Scheme = "Bearer",
+						BearerFormat = "JWT",
+						In = ParameterLocation.Header,
+						Description = "JWT Authorization header using the Bearer scheme."
+					});
+					setup.AddSecurityRequirement(new OpenApiSecurityRequirement
+					{{
+						new OpenApiSecurityScheme
+						{
+							Reference = new OpenApiReference
+							{
+								Type = ReferenceType.SecurityScheme,
+								Id = "Bearer"
+							}
+						},
+						Array.Empty<string>()
+					}});
+					setup.SwaggerDoc("0.1.0", new OpenApiInfo
 					{
 						Version = "0.1.0",
 						Title = "NotStopAlarm",
@@ -90,10 +127,9 @@ namespace IO.Swagger
 						},
 						TermsOfService = new Uri("https://example.com/terms")
 					});
-					c.CustomSchemaIds(type => type.FullName);
-					c.IncludeXmlComments($"{AppContext.BaseDirectory}{Path.DirectorySeparatorChar}{_hostingEnv.ApplicationName}.xml");
-					//c.DocumentFilter<CustomSwaggerFilter>();
-					c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
+					setup.CustomSchemaIds(type => type.FullName);
+					setup.IncludeXmlComments($"{AppContext.BaseDirectory}{Path.DirectorySeparatorChar}{_hostingEnv.ApplicationName}.xml");
+					setup.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
 				});
 		}
 
@@ -101,26 +137,33 @@ namespace IO.Swagger
 		/// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 		/// </summary>
 		/// <param name="app"></param>
-		/// <param name="env"></param>
-		/// <param name="loggerFactory"></param>
-		public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
+		public void Configure(IApplicationBuilder app)
 		{
-			app.UseRouting()
+			app
 				.UseStaticFiles()
-				.UseSwagger(c =>
+				.UseRouting()
+				.UseAuthentication()
+				.UseAuthorization()
+				.UseSwagger(option => option.RouteTemplate = "api/v1/{documentname}/swagger.json")
+				.UseSwaggerUI(option =>
 				{
-					c.RouteTemplate = Environment.GetEnvironmentVariable("SWAGGER_ROUTETEMPLATE");
+					option.RoutePrefix = "api/v1";
+					option.SwaggerEndpoint("/api/v1/0.1.0/swagger.json", "NotStopAlarm");
 				})
-				.UseSwaggerUI(c =>
-				{
-					c.RoutePrefix = Environment.GetEnvironmentVariable("SWAGGER_ROUTEPREFIX");
-					c.SwaggerEndpoint(Environment.GetEnvironmentVariable("SWAGGER_SWAGGERENDPOINT"), "NotStopAlarm");
-				})
-				.UseEndpoints(endpoints =>
-				{
-					endpoints.MapControllers();
-				})
+				.UseMiddleware<JWTMiddleware>()
+				.UseEndpoints(endpoints => endpoints.MapControllers())
+				.UseHttpsRedirection()
 				.UseDeveloperExceptionPage();
 		}
+	}
+
+	public class AuthOptions
+	{
+		public const string ISSUER = "MyAuthServer"; // издатель токена
+		public const string AUDIENCE = "MyAuthClient"; // потребитель токена
+		const string KEY = "mysupersecret_secretkey!123"; // ключ для шифрации
+
+		public static SymmetricSecurityKey GetSymmetricSecurityKey() =>
+			new(Encoding.UTF8.GetBytes(KEY));
 	}
 }

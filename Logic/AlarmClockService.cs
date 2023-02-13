@@ -1,7 +1,8 @@
-﻿using Repositories;
-using Model;
+﻿using Model;
+
+using Repositories;
+
 using Serilog;
-using System.Globalization;
 
 namespace Logic
 {
@@ -19,37 +20,37 @@ namespace Logic
 			return _repository.Create(alarmClock);
 		}
 
-		public AlarmClock Edit(AlarmClock alarmClock, DateTime oldTime)
+		public AlarmClock Edit(AlarmClock alarmClock)
 		{
-			return _repository.Edit(alarmClock, oldTime);
+			return _repository.Edit(alarmClock);
 		}
 
-		public void Delete(DateTime alarmTime)
+		public void Delete(Guid guid, Guid ownerId)
 		{
-			_repository.Delete(alarmTime);
+			_repository.Delete(guid, ownerId);
 		}
 
-		public AlarmClock? GetAlarmClock(DateTime dateTime)
+		public AlarmClock? GetAlarmClock(Guid guid)
 		{
-			return _repository.GetAlarmClock(dateTime);
+			return _repository.GetAlarmClock(guid);
 		}
 
-		public List<AlarmClock> GetAllAlarmClocks()
+		public List<AlarmClock> GetAlarmClocks(Guid ownerId)
 		{
-			return _repository.GetAllAlarmClocks();
+			return _repository.GetAlarmClocks(ownerId);
 		}
 
-		public List<AlarmClock> GetAlarmClocks(QueryStringParameters param)
+		public List<AlarmClock> GetAlarmClocks(Guid ownerId, QueryStringParameters param)
 		{
-			return _repository.GetAlarmClocksByQuery(param);
+			return _repository.GetAlarmClocks(ownerId, param);
 		}
 
 		public void InvertWork(AlarmClock alarmClock)
 		{
 			alarmClock.IsWorking = !alarmClock.IsWorking;
-			Edit(alarmClock, alarmClock.AlarmTime);
+			Edit(alarmClock);
 
-			Log.Logger.Information($"Будильник остановлен. Время будильника: {alarmClock.AlarmTime}");
+			Log.Logger.Information($"Будильник {alarmClock.Id} остановлен.");
 		}
 	}
 }

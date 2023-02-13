@@ -12,7 +12,7 @@ namespace WebAPI.DataTransferObject
 		public SortedSet<DateTime>? TimeFlags { get; set; } = null;
 		public bool? IsWorking { get; set; } = null;
 		public bool? ResetSignal { get; set; } = null;
-		
+
 		public StopwatchDTO() { }
 
 		public StopwatchDTO(string? name, string? stopwatchColor, System.Diagnostics.Stopwatch? timing, SortedSet<DateTime>? timeFlags, bool? isWorking)
@@ -35,15 +35,16 @@ namespace WebAPI.DataTransferObject
 			);
 		}
 
-/*		public static Stopwatch FromDTO(StopwatchDTO stopwatchDTO)
-		{
-			return new Stopwatch(
-				stopwatchDTO.Name,
-				Color.FromName(stopwatchDTO.StopwatchColor),
-				stopwatchDTO.Timing,
-				stopwatchDTO.TimeFlags,
-				stopwatchDTO.IsWorking
-			);
-		}
-*/	}
+		//public static Stopwatch FromDTO(StopwatchDTO stopwatchDTO, Guid ownerId)
+		//{
+		//	return new Stopwatch(
+		//		stopwatchDTO.Name,
+		//		Color.FromName(stopwatchDTO.StopwatchColor),
+		//		stopwatchDTO.Timing,
+		//		stopwatchDTO.TimeFlags,
+		//		stopwatchDTO.IsWorking ?? ,
+		//		ownerId
+		//	);
+		//}
+	}
 }

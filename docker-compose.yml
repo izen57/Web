@@ -3,55 +3,45 @@ version: '3.4'
 services:
   webapi: &conf
     image: ${DOCKER_REGISTRY-}webapi
-    environment: &env
+    environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80;
-      - SWAGGER_ROUTETEMPLATE=api/v1/{documentname}/swagger.json
-      - SWAGGER_ROUTEPREFIX=api/v1
-      - SWAGGER_SWAGGERENDPOINT=/api/v1/0.1.0/swagger.json
+      - ASPNETCORE_URLS=https://+:440;
     build:
       context: .
       dockerfile: WebAPI/Dockerfile
+    ports:
+     - "440:440"
     volumes:
-     - ./IsolatedStorage:/app/IsolatedStorage
+     - ./WebAPI/IsolatedStorage:/app/IsolatedStorage
 
   webapi2:
     <<: *conf
     environment:
      - ASPNETCORE_ENVIRONMENT=Development
-     - ASPNETCORE_URLS=http://+:81;
-     - SWAGGER_ROUTETEMPLATE=api/v1/{documentname}/swagger.json
-     - SWAGGER_ROUTEPREFIX=api/v1
-     - SWAGGER_SWAGGERENDPOINT=/api/v1/0.1.0/swagger.json
+     - ASPNETCORE_URLS=https://+:442;
     ports:
-     - "81"
+     - "442:442"
     volumes:
-     - ./IsolatedStorage:/app/IsolatedStorage:ro
+     - ./WebAPI/IsolatedStorage:/app/IsolatedStorage:ro
 
   webapi3:
     <<: *conf
     environment:
      - ASPNETCORE_ENVIRONMENT=Development
-     - ASPNETCORE_URLS=http://+:82;
-     - SWAGGER_ROUTETEMPLATE=api/v1/{documentname}/swagger.json
-     - SWAGGER_ROUTEPREFIX=api/v1
-     - SWAGGER_SWAGGERENDPOINT=/api/v1/0.1.0/swagger.json
+     - ASPNETCORE_URLS=https://+:441;
     ports:
-     - "82"
+     - "441:441"
     volumes:
-     - ./IsolatedStorage:/app/IsolatedStorage:ro
+     - ./WebAPI/IsolatedStorage:/app/IsolatedStorage:ro
 
   mirror:
     image: ${DOCKER_REGISTRY-}webapi
     container_name: mirror
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:83;
-      - SWAGGER_ROUTETEMPLATE=mirror/api/v1/{documentname}/swagger.json
-      - SWAGGER_ROUTEPREFIX=mirror/api/v1
-      - SWAGGER_SWAGGERENDPOINT=/mirror/api/v1/0.1.0/swagger.json
+      - ASPNETCORE_URLS=https://+:444;
     ports:
-     - "83"
+     - "444:444"
     build:
       context: .
       dockerfile: WebAPI/Dockerfile
@@ -62,12 +52,18 @@ services:
      - webapi2
      - webapi3
      - mirror
-    image: byjg/nginx-extras
+    #image: byjg/nginx-extras
+    image: macbre/nginx-http3:1.23.1
     ports:
-     - "80:80"
+      - "443:443/tcp"
+      - "443:443/udp"
+      - "80:80/tcp"
+      - "80:80/udp"
     volumes:
-     - ./WebAPI/server/default.conf:/etc/nginx/conf.d/default.conf:ro
+     - ./WebAPI/nginx/nginx.conf:/etc/nginx/nginx.conf
      - ./WebAPI/wwwroot:/home/static:ro
+     - ./WebAPI/nginx/For SSL/cert.crt:/etc/nginx/ssl/cert.crt:ro
+     - ./WebAPI/nginx/For SSL/private.key:/etc/nginx/ssl/private.key:ro
 
 networks:
   default:
