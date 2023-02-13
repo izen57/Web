@@ -60,10 +60,10 @@ services:
       - "80:80/tcp"
       - "80:80/udp"
     volumes:
-     - ./WebAPI/server/nginx.conf:/etc/nginx/nginx.conf
+     - ./WebAPI/nginx/nginx.conf:/etc/nginx/nginx.conf
      - ./WebAPI/wwwroot:/home/static:ro
-     - ./WebAPI/For SSL/cert.crt:/etc/nginx/ssl/cert.crt:ro
-     - ./WebAPI/For SSL/private.key:/etc/nginx/ssl/private.key:ro
+     - ./WebAPI/nginx/For SSL/cert.crt:/etc/nginx/ssl/cert.crt:ro
+     - ./WebAPI/nginx/For SSL/private.key:/etc/nginx/ssl/private.key:ro
 
 networks:
   default:
